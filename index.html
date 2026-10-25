@@ -310,6 +310,72 @@ body.kofx .stage{filter:saturate(.2) contrast(1.15) brightness(.85)}
 .take li b{font-family:var(--f-display);font-weight:700;font-size:1.5rem;line-height:1;color:#0B0A14;background:var(--gold);padding:3px 9px 0;transform:skewX(-10deg)}
 .lbl{margin:0;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
+/* ---------- finishers ---------- */
+.lbox{position:fixed;left:0;right:0;height:0;background:#000;z-index:23;transition:height .35s ease}
+.lbox.t{top:0}.lbox.b{bottom:0}
+body.cine .lbox{height:10vh}
+#bg{transition:filter .4s}
+body.cine #bg{filter:brightness(.3) saturate(.6)}
+.wheelcol{transition:opacity .4s}
+body.cine .wheelcol{opacity:.1}
+.fin{position:absolute;pointer-events:none}
+.fincard{bottom:11vh;translate:-50% 0;text-align:center;white-space:nowrap;font-family:var(--f-display);font-weight:700;line-height:.85;transform:skewX(-10deg);filter:drop-shadow(4px 4px 0 #000);animation:finin .45s cubic-bezier(.2,1.4,.5,1) both}
+.fincard small{display:block;font-size:clamp(1.1rem,3vh,1.6rem);letter-spacing:.45em;color:#fff}
+.fincard b{display:block;font-size:clamp(3rem,10.5vh,6.8rem);color:var(--fc);text-shadow:0 0 30px var(--fc)}
+.dizzy{width:0;height:0}
+.dizzy i{position:absolute;left:0;top:0;font-style:normal;color:var(--gold);font-size:24px;text-shadow:0 0 8px var(--gold);animation:orbit .9s linear infinite}
+.dizzy i:nth-child(2){animation-delay:-.3s}.dizzy i:nth-child(3){animation-delay:-.6s}
+.fighter.dazed .mover{animation:dazed .45s ease-in-out infinite alternate}
+.cring{animation:cringin .4s ease-out both}
+.cring svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 8px var(--c))}
+.cring g{transform-box:view-box;transform-origin:100px 100px}
+.cring .r1{animation:spin 1.6s linear infinite}.cring .r2{animation:spin 1s linear infinite reverse}
+.padlock{animation:lockdrop .5s cubic-bezier(.3,1.5,.5,1) both;filter:drop-shadow(0 0 18px #fff)}
+.padlock svg{width:100%;height:100%;overflow:visible}
+.shackle{animation:shackle .62s steps(1) forwards}
+.fighter.locked .mover{animation:none!important;filter:saturate(0) brightness(1.6) drop-shadow(0 0 20px #9BF0FF)!important}
+.ftag,.stamp{translate:-50% 0;font-family:var(--f-display);font-weight:700;line-height:1}
+.ftag{font-size:clamp(2rem,6vh,3.6rem);color:var(--c);border:4px solid var(--c);padding:6px 16px 0;background:rgba(11,10,20,.85);box-shadow:0 0 24px var(--c);animation:stampin .3s cubic-bezier(.2,1.6,.5,1) both}
+.slash{height:10px;border-radius:5px;translate:-50% -50%;background:linear-gradient(90deg,transparent,var(--c) 20%,#fff 50%,var(--c) 80%,transparent);box-shadow:0 0 22px var(--c);animation:slashfx .35s ease-out forwards}
+.pbar{translate:-50% -100%;min-width:240px;background:rgba(11,10,20,.92);border:2px solid var(--c);border-radius:6px;padding:8px 12px;font-weight:700;font-size:1.05rem;color:#fff;box-shadow:0 0 20px var(--c);display:grid;gap:6px;animation:optin .25s both}
+.pbar b{color:var(--c)}
+.pbar i{display:block;height:12px;background:#221B3E;border-radius:6px;overflow:hidden}
+.pbar u{display:block;height:100%;width:0;background:var(--c);box-shadow:0 0 10px var(--c);text-decoration:none}
+.stamp{translate:-50% -50%;font-size:clamp(2.8rem,9.5vh,5.8rem);color:#1A1200;background:linear-gradient(180deg,#FFF6C8,var(--c));padding:.22em .9em .08em;clip-path:polygon(8% 0,92% 0,100% 50%,92% 100%,8% 100%,0 50%);animation:stampbig .35s cubic-bezier(.2,1.6,.5,1) both}
+.beam{height:clamp(18px,4vh,34px);translate:0 -50%;border-radius:20px;background:linear-gradient(180deg,transparent,var(--c) 22%,#fff 50%,var(--c) 78%,transparent);box-shadow:0 0 30px var(--c),0 0 70px var(--c);animation:beamin .15s ease-out both,beamflick .08s steps(2) .15s infinite}
+.beam.off{animation:beamout .3s forwards}
+.fighter.derez .mover{animation:derez .14s steps(2) infinite!important;filter:drop-shadow(0 0 16px #7CFF9B) hue-rotate(70deg) brightness(1.3)}
+.errtxt{translate:-50% -100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:clamp(1.1rem,2.8vh,1.6rem);color:var(--c);text-align:center;background:rgba(11,10,20,.88);border:1px solid var(--c);padding:6px 14px;text-shadow:0 0 10px var(--c);animation:glitch .08s steps(2) 6}
+.errtxt small{font-size:.72em;color:#fff;text-shadow:none}
+.dark{inset:0;background:radial-gradient(ellipse at center,rgba(25,0,40,.78),rgba(0,0,0,.96));animation:fadein .3s both}
+.dark.off,.term.off{animation:fadeout .25s forwards}
+.eyes{display:flex;gap:16px;translate:-50% 0}
+.eyes i{width:24px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c),0 0 34px var(--c);animation:blinkeye 1.2s steps(1) infinite}
+.term{left:50%;top:15vh;translate:-50% 0;width:min(580px,90vw);background:#0A0812;border:2px solid var(--c);border-radius:8px;box-shadow:0 0 40px var(--c);overflow:hidden;animation:cardin .3s cubic-bezier(.2,1.4,.5,1)}
+.term .tb{background:var(--c);color:#0B0A14;font-weight:700;padding:4px 10px;font-size:.85rem}
+.term pre{margin:0;padding:14px 16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:clamp(1rem,2.6vh,1.4rem);color:#E9DCFF;white-space:pre-wrap;min-height:4.4em}
+.term pre b{color:var(--c);text-shadow:0 0 10px var(--c)}
+.spikes{translate:-50% -100%;transform-origin:50% 100%;animation:spikesup .35s cubic-bezier(.2,1.5,.5,1) both,fadeout .3s .8s forwards}
+.spikes svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 14px var(--c))}
+.fighter.vanish .mover{opacity:0;transition:opacity .2s}
+.fighter.appear .mover{transform:translateX(calc(var(--reach,40%) * 1.02))}
+@keyframes finin{0%{opacity:0;transform:skewX(-10deg) scale(1.7)}100%{opacity:1;transform:skewX(-10deg)}}
+@keyframes orbit{0%{transform:translate(-50%,-50%) rotate(0) translateX(40px) rotate(0)}100%{transform:translate(-50%,-50%) rotate(360deg) translateX(40px) rotate(-360deg)}}
+@keyframes dazed{from{transform:rotate(-5deg) translateX(-3%)}to{transform:rotate(4deg) translateX(2%)}}
+@keyframes cringin{from{transform:scale(2.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes lockdrop{0%{transform:translateY(-75vh)}100%{transform:none}}
+@keyframes shackle{0%{transform:translateY(-16px)}80%{transform:none}}
+@keyframes stampin{0%{transform:rotate(-6deg) scale(2.6);opacity:0}100%{transform:rotate(-6deg);opacity:1}}
+@keyframes stampbig{0%{transform:rotate(-14deg) scale(3);opacity:0}100%{transform:rotate(-6deg);opacity:1}}
+@keyframes slashfx{0%{scale:0 1;opacity:1}40%{scale:1 1;opacity:1}100%{scale:1.15 .1;opacity:0}}
+@keyframes beamin{from{transform:scaleX(0)}to{transform:none}}
+@keyframes beamflick{50%{opacity:.7}}
+@keyframes beamout{to{transform:scaleY(0);opacity:0}}
+@keyframes derez{0%{clip-path:inset(0 0 55% 0);transform:translateX(-4%)}50%{clip-path:inset(30% 0 12% 0);transform:translateX(4%)}100%{clip-path:inset(50% 0 0 0);transform:none}}
+@keyframes spikesup{from{transform:scaleY(0)}to{transform:none}}
+@keyframes fadein{from{opacity:0}}
+@keyframes fadeout{to{opacity:0}}
+@keyframes blinkeye{0%,46%,54%,100%{transform:none}50%{transform:scaleY(.1)}}
 @keyframes bob{to{transform:translateY(5px) scaleY(.99)}}
 @keyframes aura{from{transform:scale(.94)}to{transform:scale(1.08)}}
 @keyframes ember{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(-250px)}}
@@ -450,6 +516,7 @@ body.kofx .stage{filter:saturate(.2) contrast(1.15) brightness(.85)}
 </div>
 
 <div id="flash"></div>
+<div class="lbox t"></div><div class="lbox b"></div>
 <div class="ov" id="qov" hidden></div>
 <canvas id="fxc" aria-hidden="true"></canvas>
 <div id="fxl" aria-hidden="true"></div>
@@ -635,6 +702,8 @@ const SFX={
  bad:()=>tone(220,.45,"sawtooth",.1,0,70),
  zap:()=>{tone(1200,.35,"sawtooth",.09,0,60);noise(.35,.25,4000,500)},
  heal:()=>{tone(420,.35,"triangle",.14,0,1300);tone(840,.3,"sine",.06,.1,1600)},
+ lock:()=>{tone(1900,.04,"square",.09);tone(520,.14,"square",.09,.05);noise(.08,.3)},
+ beam:()=>{tone(110,1.05,"sawtooth",.12,0,85);tone(880,1.05,"sine",.05,0,600);noise(1.05,.14,800,3000)},
  land:()=>{tone(660,.1,"square",.06);tone(990,.18,"square",.06,.08)},
  fight:()=>{tone(392,.15,"square",.08);tone(523,.15,"square",.08,.14);tone(784,.4,"square",.09,.28);noise(.4,.2,300,2000)},
  ko:()=>{tone(90,1.3,"sine",.6,0,28);noise(.8,.35)},
@@ -701,6 +770,7 @@ function fxLoop(){
     if(p.t==="spark"){c.globalCompositeOperation="lighter";c.globalAlpha=k;c.strokeStyle=p.col;c.lineWidth=p.size;c.lineCap="round";c.beginPath();c.moveTo(p.x,p.y);c.lineTo(p.x-p.vx*2.6,p.y-p.vy*2.6);c.stroke()}
     else if(p.t==="dot"){c.globalCompositeOperation="lighter";c.globalAlpha=k;c.fillStyle=p.col;c.beginPath();c.arc(p.x,p.y,p.size*k+.6,0,7);c.fill()}
     else if(p.t==="conf"){c.globalCompositeOperation="source-over";c.globalAlpha=Math.min(1,k*3);p.rot+=p.vr;c.save();c.translate(p.x+Math.sin(p.life*.08+p.rot)*2,p.y);c.rotate(p.rot);c.fillStyle=p.col;c.fillRect(-p.size,-p.size*.4,p.size*2,p.size*.8);c.restore()}
+    else if(p.t==="sq"){c.globalCompositeOperation="lighter";c.globalAlpha=k;c.fillStyle=p.col;c.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size)}
     else if(p.t==="bin"){c.globalCompositeOperation="lighter";c.globalAlpha=k;c.fillStyle=p.col;c.font=`700 ${p.size*5|0}px ui-monospace,monospace`;c.fillText(p.ch,p.x,p.y)}
   }
   c.globalAlpha=1;c.globalCompositeOperation="source-over";
@@ -720,7 +790,7 @@ function initSetup(){
 function preview(p,anim){
   const f=FIGHTERS.find(x=>x.id===picks[p]);
   $("#prev"+p).innerHTML=`<span class="ptag">PLAYER ${p+1}</span><div class="fighter p${p+1} active" id="pf${p}"><div class="mover">${fighterSVG(f.id,TEAMCOL[p])}</div></div><span class="pname gtext">${f.name.toUpperCase()}</span>`;
-  $("#fdesc"+p).textContent=f.desc;
+  $("#fdesc"+p).innerHTML=`${esc(f.desc)} <b style="color:${f.acc}">Finisher: ${FINISHERS[f.id].name}</b>`;
   const el=$("#pf"+p);el.classList.toggle("pose-upper",anim);if(anim){act(el,"act-jump",700);setTimeout(()=>el.classList.remove("pose-upper"),650);
     const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.bottom-10,{n:24,cols:[TEAMCOL[p],"#fff",f.acc],spd:7,g:.15,type:"spark"})}
 }
@@ -847,7 +917,7 @@ function hitstop(ms){const g=$("#game");g.classList.add("stop");setTimeout(()=>g
 function flash(a=.5,col="#fff"){const f=$("#flash");f.style.setProperty("--fc",col);f.style.setProperty("--fa",a);f.classList.remove("on");void f.offsetWidth;f.classList.add("on")}
 function shake(big){const s=big?$("#game"):$("#stage"),c=big?"bigshake":"shake";s.classList.remove(c);void s.offsetWidth;s.classList.add(c);setTimeout(()=>s.classList.remove(c),650)}
 function zoom(){const s=$("#stage");s.classList.remove("zoom");void s.offsetWidth;s.classList.add("zoom")}
-function fxEl(cls,html,style){const d=document.createElement("div");d.className=cls;if(html)d.innerHTML=html;if(style)Object.assign(d.style,style);$("#fxl").appendChild(d);return d}
+function fxEl(cls,html,style){const d=document.createElement("div");d.className=cls;if(html)d.innerHTML=html;if(style)for(const[k,v]of Object.entries(style))k.startsWith("--")?d.style.setProperty(k,v):(d.style[k]=v);$("#fxl").appendChild(d);return d}
 function contact(o){const r=$("#f"+o).getBoundingClientRect();return{x:o===1?r.left+r.width*.32:r.right-r.width*.32,y:r.top+r.height*.36,r}}
 function sparkAt(x,y,big,col){const pts=Array.from({length:18},(_,i)=>{const rr=i%2?14:48,a=i/18*Math.PI*2;return (Math.cos(a)*rr).toFixed(1)+","+(Math.sin(a)*rr).toFixed(1)}).join(" ");
   const d=fxEl("spark",`<svg viewBox="-50 -50 100 100" width="100%" height="100%"><polygon points="${pts}" fill="${col}" stroke="#fff" stroke-width="3"/><circle r="13" fill="#fff"/></svg>`,{left:x+"px",top:y+"px"});d.style.setProperty("--s",(big?240:140)+"px");setTimeout(()=>d.remove(),450)}
@@ -919,6 +989,109 @@ async function roundIntro(){
   if(S.phase==="intro"){S.phase="idle";render();save()}
 }
 
+/* ================= FINISHERS ================= */
+const FINISHERS={
+ cipher:{name:"TOTAL ENCRYPTION",fn:finCipher},
+ patch:{name:"CRITICAL PATCH",fn:finPatch},
+ nullx:{name:"NULL POINTER",fn:finNull},
+ rootkit:{name:"ROOT ACCESS",fn:finRoot}};
+const fin=(cls,html,style)=>fxEl("fin "+cls,html,style);
+function box(i){const r=$("#f"+i).getBoundingClientRect();return{r,cx:r.left+r.width/2,cy:r.top+r.height*.45}}
+const hexs=n=>Array.from({length:n},()=>(Math.random()*256|0).toString(16).toUpperCase().padStart(2,"0"));
+async function finisher(w){
+  const l=1-w,W=$("#f"+w),L=$("#f"+l),fid=S.teams[w].f,F=FINISHERS[fid],acc=FIGHTERS.find(f=>f.id===fid).acc,b=box(l);
+  updateReach();W.className="fighter p"+(w+1)+" active";
+  hitstop(350);flash(.85);SFX.punch(true);ring(b.cx,b.cy,"#fff",1.4);
+  L.classList.add("dazed");fin("dizzy","<i>★</i><i>★</i><i>★</i>",{left:b.cx+"px",top:(b.r.top+b.r.height*.04)+"px"});
+  document.body.classList.add("cine");
+  await wait(650);
+  fin("fincard",`<small>FINISHER</small><b>${F.name}</b>`,{left:"50%","--fc":acc});
+  SFX.fight();
+  await F.fn(w,l,W,L,acc);
+  $("#fxl .dizzy")?.remove();L.classList.remove("dazed","locked","derez","launch","hit");
+  L.classList.add("ko");$("#side"+l).classList.add("koed");SFX.ko();shake(true);
+  ring(b.cx,b.cy,"#FF4D4D",2.2);ring(b.cx,b.cy,acc,1.6,150);
+  await wait(650);
+  document.body.classList.remove("cine");$("#fxl").querySelectorAll(".fin").forEach(e=>e.remove());W.classList.remove("active","vanish","appear");pose(W,"guard");
+}
+/* Cipher: wraps the opponent in spinning ciphertext, locks them with a padlock, then shatters them into hex bytes */
+async function finCipher(w,l,W,L,acc){
+  const b=box(l),s=b.r.height*.95;
+  pose(W,"upper");SFX.charge();
+  fin("cring",`<svg viewBox="0 0 200 200"><defs><path id="crA" d="M20,100 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/><path id="crB" d="M38,100 a62,62 0 1,1 124,0 a62,62 0 1,1 -124,0"/></defs>
+    <g class="r1"><circle cx="100" cy="100" r="80" fill="none" stroke="${acc}" stroke-width="1.5" opacity=".6"/><text font-size="12" font-family="ui-monospace,monospace" font-weight="700" fill="${acc}"><textPath href="#crA">${hexs(28).join(" ")}</textPath></text></g>
+    <g class="r2"><circle cx="100" cy="100" r="62" fill="none" stroke="#fff" stroke-width="1" stroke-dasharray="4 6" opacity=".7"/><text font-size="10" font-family="ui-monospace,monospace" fill="#fff"><textPath href="#crB">${hexs(22).join(" ")}</textPath></text></g></svg>`,
+    {left:(b.cx-s/2)+"px",top:(b.cy-s/2)+"px",width:s+"px",height:s+"px","--c":acc});
+  for(let i=0;i<9;i++)setTimeout(SFX.tick,i*90);
+  await wait(950);
+  const lk=b.r.width*.5;
+  fin("padlock",`<svg viewBox="0 0 100 120"><g class="shackle"><path d="M28 58 V36 a22 22 0 0 1 44 0 V58" fill="none" stroke="#DDE6F0" stroke-width="11" stroke-linecap="round"/></g><rect x="12" y="52" width="76" height="62" rx="10" fill="${acc}" stroke="#0B0A14" stroke-width="4"/><circle cx="50" cy="78" r="8" fill="#0B0A14"/><rect x="46" y="80" width="8" height="18" rx="3" fill="#0B0A14"/></svg>`,
+    {left:(b.cx-lk/2)+"px",top:(b.cy-lk*.7)+"px",width:lk+"px",height:(lk*1.2)+"px"});
+  await wait(520);
+  SFX.lock();flash(.5,acc);ring(b.cx,b.cy,acc,1.6);L.classList.add("locked");shake(false);
+  fin("ftag","ENCRYPTED",{left:b.cx+"px",top:(b.r.top+b.r.height*.74)+"px","--c":acc});
+  await wait(750);
+  $("#fxl .padlock")?.remove();$("#fxl .cring")?.remove();
+  if(!reduce)hexs(48).forEach(h=>addP({t:"bin",ch:h,x:b.cx+rnd(-.4,.4)*b.r.width,y:b.r.top+rnd(.1,.9)*b.r.height,vx:rnd(-5,5),vy:rnd(-6,1),g:.14,max:rnd(45,75),size:rnd(3,5),col:Math.random()<.6?acc:"#fff"}));
+  burst(b.cx,b.cy,{n:40,cols:[acc,"#fff"],spd:14,g:.15});SFX.punch(true);flash(.4,acc);
+  pose(W,"guard");await wait(300);
+}
+/* Patch: a 6-hit golden slash flurry, installs a "patch" with a progress bar, then a PATCHED stamp launches the opponent */
+async function finPatch(w,l,W,L,acc){
+  const b=box(l);
+  act(W,"act-rush",1300);SFX.whoosh();await wait(240);
+  for(let i=0;i<6;i++){
+    pose(W,["punch","kick","upper","punch","kick","punch"][i]);
+    fin("slash","",{left:b.cx+"px",top:(b.cy+rnd(-.18,.18)*b.r.height)+"px",width:(b.r.height*.9)+"px",rotate:rnd(-65,65).toFixed(0)+"deg","--c":acc});
+    burst(b.cx,b.cy,{n:12,cols:[acc,"#fff"],spd:9,g:.2});SFX.punch(false);act(L,"hit",200);shake(false);
+    await wait(110);
+  }
+  pose(W,"guard");
+  const pb=fin("pbar",`<span>Installing patch… <b>0%</b></span><i><u></u></i>`,{left:b.cx+"px",top:(b.r.top-8)+"px","--c":acc});
+  const t0=performance.now(),dur=reduce?100:800;
+  await new Promise(res=>{(function f(now){const p=Math.min(1,(now-t0)/dur);pb.querySelector("u").style.width=(p*100)+"%";pb.querySelector("b").textContent=Math.round(p*100)+"%";if(Math.random()<.25)SFX.tick();if(p<1)requestAnimationFrame(f);else res()})(t0)});
+  fin("stamp","PATCHED",{left:b.cx+"px",top:b.cy+"px","--c":acc});
+  SFX.punch(true);flash(.6,acc);ring(b.cx,b.cy,acc,1.8);shake(true);act(L,"launch",900);
+  burst(b.cx,b.cy,{n:50,cols:[acc,"#fff","#FF8A00"],spd:16,g:.2});
+  await wait(850);
+}
+/* Null: charges its visor, fires a laser beam that de-rezzes the opponent into pixels */
+async function finNull(w,l,W,L,acc){
+  const a=box(w),b=box(l),hx=w===0?a.r.left+a.r.width*.62:a.r.right-a.r.width*.62,hy=a.r.top+a.r.height*.19;
+  pose(W,"punch");SFX.charge();
+  if(!reduce)for(let i=0;i<44;i++){const an=rnd(0,6.3),d=rnd(60,150);setTimeout(()=>addP({t:"dot",x:hx+Math.cos(an)*d,y:hy+Math.sin(an)*d,vx:-Math.cos(an)*d/14,vy:-Math.sin(an)*d/14,g:0,max:14,size:rnd(2,4),col:Math.random()<.6?acc:"#fff"}),i*15)}
+  await wait(720);
+  const x1=b.cx+(w===0?b.r.width*.7:-b.r.width*.7),left=Math.min(hx,x1),wid=Math.abs(x1-hx);
+  const beam=fin("beam","",{left:left+"px",top:hy+"px",width:wid+"px",transformOrigin:w===0?"left center":"right center","--c":acc});
+  SFX.beam();flash(.45,acc);L.classList.add("derez");
+  const iv=setInterval(()=>{burst(b.cx+(w===0?-1:1)*b.r.width*.12,hy,{n:8,cols:[acc,"#fff"],spd:8,g:.1});shake(false)},120);
+  await wait(1000);clearInterval(iv);beam.classList.add("off");
+  fin("errtxt",`NullPointerException<br><small>process "${esc(S.teams[l].name)}" terminated</small>`,{left:b.cx+"px",top:(b.r.top+b.r.height*.04)+"px","--c":acc});
+  if(!reduce)for(let i=0;i<64;i++)addP({t:"sq",x:b.cx+rnd(-.35,.35)*b.r.width,y:b.r.top+rnd(.05,.95)*b.r.height,vx:rnd(-2.5,2.5),vy:rnd(-3,0),g:.08,max:rnd(40,70),size:rnd(4,10),col:Math.random()<.5?acc:"#fff"});
+  SFX.punch(true);pose(W,"guard");
+  await wait(750);
+}
+/* Rootkit: blacks out the arena, types a root command in a terminal, then erupts from the floor with shadow spikes */
+async function finRoot(w,l,W,L,acc){
+  const b=box(l),side=w===0?1:-1;
+  const dark=fin("dark","");SFX.zap();W.classList.add("vanish");
+  await wait(420);
+  fin("eyes","<i></i><i></i>",{left:(b.cx+side*b.r.width*.55)+"px",top:(b.r.top+b.r.height*.16)+"px","--c":acc});
+  const term=fin("term",`<div class="tb">root@cyber: ~</div><pre></pre>`,{"--c":acc}),pre=term.querySelector("pre"),cmd=`$ sudo kill -9 "${S.teams[l].name}"`;
+  for(let i=0;i<=cmd.length;i++){pre.textContent=cmd.slice(0,i)+"▌";if(i%2===0)SFX.tick();await wait(26)}
+  pre.innerHTML=esc(cmd)+`\n<b>[ ROOT ACCESS GRANTED ]</b>`;SFX.land();
+  await wait(600);
+  dark.classList.add("off");term.classList.add("off");$("#fxl .eyes")?.remove();
+  W.classList.remove("vanish");W.classList.add("appear");pose(W,"upper");
+  const sp=[[8,46],[24,78],[42,58],[60,100],[78,64],[96,84],[114,52],[130,40]].map(([x,h])=>`<path d="M${x-9} 100 L${x} ${100-h} L${x+9} 100 Z" fill="url(#spk)" stroke="${acc}" stroke-width="1.5"/>`).join("");
+  fin("spikes",`<svg viewBox="0 0 140 100" preserveAspectRatio="none"><defs><linearGradient id="spk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${acc}"/><stop offset="1" stop-color="#1C1A2E"/></linearGradient></defs>${sp}</svg>`,
+    {left:b.cx+"px",top:b.r.bottom+"px",width:(b.r.width*1.3)+"px",height:(b.r.height*.7)+"px","--c":acc});
+  SFX.punch(true);flash(.5,acc);shake(true);act(L,"launch",900);ring(b.cx,b.cy,acc,1.7);
+  burst(b.cx,b.r.bottom-20,{n:50,cols:[acc,"#fff","#6B4FA0"],spd:15,dir:-Math.PI/2,spread:1.6,g:.3});
+  await wait(900);
+  W.classList.remove("appear");pose(W,"guard");
+}
+
 /* ================= CARDS ================= */
 function openCard(){
   const c=S.cur,a=active(),t=S.teams[a],sl=SLICES[c.k],cat=CATS[sl.c],ov=$("#qov");
@@ -970,14 +1143,10 @@ function renderResult(){
 
 /* ================= END GAME ================= */
 async function knockout(w){
-  S.phase="over";S.over={w,how:"K.O."};render();save();
-  const l=1-w,L=$("#f"+l),r=L.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height*.4;
-  hitstop(400);document.body.classList.add("kofx");flash(.9);SFX.ko();
-  ring(x,y,"#FF4D4D",2.4);ring(x,y,"#FFC531",1.8,150);ring(x,y,"#fff",1.2,300);
-  burst(x,y,{n:80,cols:["#FF4D4D","#FFC531","#fff"],spd:18,g:.18});
-  await wait(350);L.classList.add("ko");$("#side"+l).classList.add("koed");
-  await banner("K.O.",2000,{red:true,slam:true});
-  document.body.classList.remove("kofx");
+  S.phase="finishing";S.over={w,how:"K.O.",fin:FINISHERS[S.teams[w].f].name};render();
+  await finisher(w);
+  S.phase="over";render();save();
+  await banner("K.O.",1700,{red:true,slam:true});
   winPose(w);showWinner();
 }
 function winPose(w){const W=$("#f"+w);pose(W,"upper");W.classList.add("win")}
@@ -1000,14 +1169,14 @@ function suddenDeath(){
     <div class="crow"><button class="btn" id="revealBtn">Reveal answer</button></div>
     <div class="crow"><button class="btn" style="border-color:var(--p1)" id="sd0">${esc(S.teams[0].name)} got it</button><button class="btn" style="border-color:var(--p2)" id="sd1">${esc(S.teams[1].name)} got it</button><button class="tool sp" id="sdNone">Nobody · next question</button></div></div>`;
   $("#revealBtn").onclick=()=>{ov.querySelectorAll(".opt").forEach((b,i)=>b.classList.add(i===q.a?"right":"dim"))};
-  [0,1].forEach(w=>$("#sd"+w).onclick=()=>{ov.hidden=true;S.phase="over";S.over={w,how:"Sudden death"};render();save();winPose(w);$("#f"+(1-w)).classList.add("ko");showWinner()});
+  [0,1].forEach(w=>$("#sd"+w).onclick=async()=>{ov.hidden=true;S.phase="finishing";S.over={w,how:"Sudden death",fin:FINISHERS[S.teams[w].f].name};render();await finisher(w);S.phase="over";render();save();winPose(w);showWinner()});
   $("#sdNone").onclick=suddenDeath;
 }
 function showWinner(){
   const w=S.over.w,T=S.teams,ov=$("#qov");SFX.win();ov.hidden=false;confetti();setTimeout(confetti,900);
   ov.innerHTML=`<div class="card win-card" role="dialog" aria-label="Winner">
     <div class="win-grid"><div class="wf"><div class="fighter win active pose-upper" style="--pc:${TEAMCOL[w]}"><div class="mover">${fighterSVG(T[w].f,TEAMCOL[w])}</div></div></div>
-    <div><p class="lbl">${esc(S.over.how)} · ${esc(FIGHTERS.find(f=>f.id===T[w].f).name)} wins</p><h2 class="wtitle gtext">${esc(T[w].name)} wins!</h2>
+    <div><p class="lbl">${esc(S.over.how)} · ${esc(FIGHTERS.find(f=>f.id===T[w].f).name)} wins${S.over.fin?" with "+S.over.fin:""}</p><h2 class="wtitle gtext">${esc(T[w].name)} wins!</h2>
     <div class="scores"><span style="border-color:var(--p1)">${esc(T[0].name)} · ${T[0].hp} HP</span><span style="border-color:var(--p2)">${esc(T[1].name)} · ${T[1].hp} HP</span></div></div></div>
     <p class="lbl">Key takeaways</p>
     <ul class="take">${TAKEAWAYS.map((t,i)=>`<li><b>${i+1}</b><span>${esc(t)}</span></li>`).join("")}</ul>
@@ -1019,7 +1188,7 @@ function showWinner(){
 /* ================= RENDER / CONTROLS ================= */
 function render(){
   if(!S)return;
-  const a=active(),busy=["spinning","anim","intro","ending"].includes(S.phase),live=S.phase!=="over";
+  const a=active(),busy=["spinning","anim","intro","ending","finishing"].includes(S.phase),live=!S.over;
   [0,1].forEach(i=>{
     const t=S.teams[i],pct=Math.max(0,Math.min(100,t.hp));
     $("#tn"+i).textContent=t.name;$("#fn"+i).textContent=FIGHTERS.find(f=>f.id===t.f).name;
@@ -1042,8 +1211,8 @@ function render(){
 }
 function save(){if(S)lsSet({S,prevSnap})}
 function undo(){
-  if(!prevSnap||["spinning","anim","intro","ending"].includes(S.phase))return;
-  stopTimer();$("#qov").hidden=true;$("#banner").hidden=true;document.body.classList.remove("kofx");
+  if(!prevSnap||["spinning","anim","intro","ending","finishing"].includes(S.phase))return;
+  stopTimer();$("#qov").hidden=true;$("#banner").hidden=true;document.body.classList.remove("kofx","cine");$("#fxl").innerHTML="";
   S=clone(prevSnap);prevSnap=null;S.phase="idle";S.cur=null;
   [0,1].forEach(i=>{$("#f"+i).className="fighter p"+(i+1);$("#side"+i).classList.remove("koed")});
   $("#landtag").textContent="";$("#wbox").classList.remove("landed","spinning");setAngle(S.angle);render();save();
@@ -1055,7 +1224,7 @@ function fs(){try{document.fullscreenElement?document.exitFullscreen():document.
 
 $("#startBtn").onclick=()=>{ac();newGame()};
 $("#resumeBtn").onclick=()=>{const d=lsGet();if(!d||!d.S)return;S=d.S;prevSnap=d.prevSnap;
-  if(S.phase==="over"){enterGame();winPose(S.over.w);showWinner();return}
+  if(S.phase==="over"){enterGame();winPose(S.over.w);$("#f"+(1-S.over.w)).classList.add("ko");showWinner();return}
   if(S.phase!=="idle"&&S.phase!=="intro"){if(prevSnap){S=clone(prevSnap);prevSnap=null}S.cur=null}
   S.phase="idle";enterGame()};
 $("#spinBtn").onclick=spin;
@@ -1082,7 +1251,7 @@ window.claude?.hot?.snapshot?.(()=>({S,prevSnap,picks}));
 function boot(d){
   bgInit();fxInit();
   if(d&&d.picks)picks=d.picks;initSetup();
-  if(d&&d.S){S=d.S;prevSnap=d.prevSnap||null;if(!["idle","over"].includes(S.phase)){if(prevSnap){S=clone(prevSnap);prevSnap=null}S.cur=null;S.phase="idle"}enterGame();if(S.phase==="over"){winPose(S.over.w);showWinner()}}
+  if(d&&d.S){S=d.S;prevSnap=d.prevSnap||null;if(!["idle","over"].includes(S.phase)){if(prevSnap){S=clone(prevSnap);prevSnap=null}S.cur=null;S.phase="idle"}enterGame();if(S.phase==="over"){winPose(S.over.w);$("#f"+(1-S.over.w)).classList.add("ko");showWinner()}}
 }
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??null);
 </script>
