@@ -1,0 +1,782 @@
+<title>Cyber K.O.</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Chakra+Petch:wght@400;600;700&display=swap">
+<style>
+/* Layout: a 2-player fighting-game arena for a projector. Fighting-game HUD on top (two health bars + round clock),
+   two fighters face off on a lit stage floor, the category wheel sits between them. Questions open as "move cards".
+   Single dark arcade look by choice: P1 blue on the left, P2 red on the right, gold for the clock, K.O. and hits. */
+:root{
+  color-scheme:dark;
+  --night:#0B0A14; --stage:#161228; --panel:#1C1733; --edge:#342C5A;
+  --text:#F2EEFF; --muted:#A39CC4;
+  --p1:#2FB8FF; --p2:#FF3D5A; --gold:#FFC531; --ok:#3BE08A; --bad:#FF4D4D;
+  --f-display:"Teko","Arial Narrow",Impact,sans-serif;
+  --f-body:"Chakra Petch",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.45;overflow:hidden;
+  background-image:radial-gradient(ellipse 45% 70% at 12% 60%,rgba(47,184,255,.16),transparent 70%),radial-gradient(ellipse 45% 70% at 88% 60%,rgba(255,61,90,.16),transparent 70%),radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,197,49,.08),transparent 70%)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+kbd{font-family:var(--f-body);font-weight:700;font-size:.8em;background:#2A2348;border:1px solid var(--edge);border-bottom-width:3px;border-radius:4px;padding:0 6px;color:var(--text)}
+#app{height:100%;display:flex;flex-direction:column;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.slant{display:inline-block;transform:skewX(-10deg)}
+
+/* ---------- setup ---------- */
+.setup{flex:1;overflow-y:auto;display:grid;align-content:start;gap:22px;max-width:1200px;width:100%;margin:0 auto;padding-block:8px 24px}
+.brand{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 22px}
+.logo{font-family:var(--f-display);font-weight:700;font-size:clamp(3.4rem,9vw,7rem);line-height:.8;margin:0;letter-spacing:.01em;text-transform:uppercase}
+.logo em{font-style:normal;color:var(--gold)}
+.vs-word{font-family:var(--f-display);font-weight:700;font-size:clamp(2.2rem,5vw,4rem);line-height:.8;color:transparent;-webkit-text-stroke:2px var(--gold);transform:skewX(-10deg)}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.pick{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:18px;align-items:stretch}
+.vs-mid{align-self:center;font-family:var(--f-display);font-weight:700;font-size:4rem;color:var(--gold);transform:skewX(-10deg)}
+@media(max-width:820px){.pick{grid-template-columns:1fr}.vs-mid{justify-self:center;font-size:2.6rem;line-height:1}}
+.pcard{--pc:var(--p1);background:linear-gradient(160deg,color-mix(in srgb,var(--pc) 16%,var(--panel)),var(--panel) 60%);border:2px solid color-mix(in srgb,var(--pc) 55%,var(--edge));border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.pcard.p2{--pc:var(--p2)}
+.ptag{font-family:var(--f-display);font-weight:600;font-size:1.4rem;letter-spacing:.06em;color:var(--pc);line-height:1}
+.field{display:grid;gap:6px}
+.field label{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.field input{background:#0F0C1E;border:1px solid var(--edge);border-radius:6px;padding:12px 14px;color:var(--text);font:inherit;font-size:1.15rem;font-weight:600;min-width:0;width:100%}
+.field input:focus{outline:none;border-color:var(--pc)}
+.roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rbtn{background:#0F0C1E;border:2px solid var(--edge);border-radius:8px;padding:6px 4px 8px;display:grid;justify-items:center;gap:2px;transition:border-color .15s,transform .1s}
+.rbtn svg{width:100%;max-width:84px;height:auto;display:block}
+.rbtn span{font-family:var(--f-display);font-weight:600;font-size:1.25rem;line-height:1;letter-spacing:.04em}
+.rbtn[aria-pressed="true"]{border-color:var(--pc);background:color-mix(in srgb,var(--pc) 18%,#0F0C1E);transform:translateY(-2px)}
+.rbtn:hover{border-color:color-mix(in srgb,var(--pc) 70%,var(--edge))}
+.fdesc{margin:0;color:var(--muted);font-size:.9rem;min-height:1.4em}
+.rules{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px 26px;margin:0}
+.rules div{display:grid;gap:2px}
+.rules dt{font-family:var(--f-display);font-weight:600;font-size:1.3rem;line-height:1;color:var(--gold);letter-spacing:.04em}
+.rules dt.warn{color:var(--bad)}
+.rules dd{margin:0;color:var(--text);font-size:.95rem}
+.cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{border:1px solid var(--edge);border-radius:6px;padding:12px 22px;font-weight:700;background:#241D42}
+.btn:hover{border-color:var(--gold)}
+.btn.go{background:var(--gold);color:#1A1200;border-color:transparent;font-family:var(--f-display);font-weight:700;font-size:1.9rem;line-height:1;padding:12px 34px 8px;letter-spacing:.04em;box-shadow:0 5px 0 #8A6400;transform:skewX(-8deg)}
+.btn.go:active{transform:skewX(-8deg) translateY(4px);box-shadow:0 1px 0 #8A6400}
+.keys{color:var(--muted);font-size:.9rem}
+
+/* ---------- HUD ---------- */
+.game{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0}
+.hud{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px;align-items:start}
+.side{--pc:var(--p1);display:grid;gap:6px;min-width:0}
+.side.p2{--pc:var(--p2);text-align:right}
+.nameline{display:flex;align-items:baseline;gap:10px;min-width:0}
+.p2 .nameline{flex-direction:row-reverse}
+.tname{font-family:var(--f-display);font-weight:700;font-size:clamp(1.5rem,3.6vh,2.4rem);line-height:1;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fname{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pc);white-space:nowrap}
+.turnflag{margin-left:auto;font-family:var(--f-display);font-weight:600;font-size:1.15rem;line-height:1;padding:3px 10px 1px;background:var(--pc);color:#0B0A14;transform:skewX(-12deg);opacity:0;transition:opacity .25s;white-space:nowrap}
+.p2 .turnflag{margin-left:0;margin-right:auto}
+.side.active .turnflag{opacity:1}
+.bar{position:relative;height:clamp(22px,3.8vh,36px);background:#120F22;border:2px solid #4A4170;transform:skewX(-22deg);overflow:hidden;box-shadow:0 0 0 2px #0B0A14,inset 0 0 12px rgba(0,0,0,.8)}
+.p2 .bar{transform:skewX(22deg)}
+.bar i{position:absolute;top:0;bottom:0;left:0;width:100%}
+.p2 .bar i{left:auto;right:0}
+.bar .trail{background:var(--bad);transition:width .6s ease .55s}
+.bar .fill{background:linear-gradient(180deg,#FFF6C8,var(--gold) 45%,#E09A00);transition:width .3s ease-out}
+.bar .shine{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 50%);width:100%!important}
+.side.low .bar .fill{background:linear-gradient(180deg,#FFD0C0,var(--bad) 50%,#A01020);animation:blink .7s steps(2) infinite}
+.side.over .bar{border-color:var(--ok);box-shadow:0 0 0 2px #0B0A14,0 0 18px var(--ok)}
+.side.active .bar{border-color:var(--pc);box-shadow:0 0 0 2px #0B0A14,0 0 22px color-mix(in srgb,var(--pc) 70%,transparent)}
+.hpline{display:flex;align-items:center;gap:10px;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.p2 .hpline{flex-direction:row-reverse}
+.hpnum{font-family:var(--f-display);font-weight:700;font-size:clamp(1.6rem,3.6vh,2.3rem);line-height:.9;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.dbl{font-family:var(--f-display);font-weight:700;font-size:1.25rem;line-height:1;padding:3px 10px 0;color:#1A1200;background:repeating-linear-gradient(-45deg,var(--gold) 0 10px,#FFE38A 10px 20px);transform:skewX(-12deg);animation:blink .8s steps(2) infinite}
+.center{display:grid;justify-items:center;gap:4px;min-width:clamp(96px,11vw,150px)}
+.clock{width:100%;display:grid;place-items:center;background:#120F22;border:2px solid #4A4170;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);padding:4px 18px 0}
+.clock b{font-family:var(--f-display);font-weight:700;font-size:clamp(2.6rem,7vh,4.4rem);line-height:.95;color:var(--gold);font-variant-numeric:tabular-nums}
+.clock.urgent b{color:var(--bad);animation:blink .5s steps(2) infinite}
+.rnd{font-family:var(--f-display);font-weight:600;font-size:clamp(1.05rem,2.4vh,1.4rem);line-height:1;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.pips{display:flex;gap:5px}
+.pips i{width:14px;height:8px;background:#2A2348;transform:skewX(-20deg)}
+.pips i.done{background:var(--gold)}
+.pips i.now{background:var(--text)}
+
+/* ---------- stage ---------- */
+.stage{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:8px;isolation:isolate}
+.stage::before{content:"";position:absolute;left:-30%;right:-30%;bottom:-2%;height:34%;z-index:-1;transform:perspective(380px) rotateX(62deg);transform-origin:50% 100%;
+  background:linear-gradient(0deg,rgba(255,197,49,.10),transparent 80%),repeating-linear-gradient(90deg,rgba(163,156,196,.22) 0 2px,transparent 2px 70px),repeating-linear-gradient(0deg,rgba(163,156,196,.18) 0 2px,transparent 2px 46px);
+  -webkit-mask-image:linear-gradient(0deg,#000 40%,transparent);mask-image:linear-gradient(0deg,#000 40%,transparent)}
+.stage.shake{animation:shake .45s}
+.slot{position:relative;display:flex;justify-content:center;align-items:flex-end;min-width:0;height:100%}
+.fighter{--pc:var(--p1);position:relative;height:min(54vh,30vw);aspect-ratio:220/300;max-width:100%}
+.fighter.p2{--pc:var(--p2);transform:scaleX(-1)}
+.fighter::before{content:"";position:absolute;left:4%;right:12%;bottom:0;height:9%;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--pc) 60%,transparent),transparent);opacity:0;transition:opacity .3s}
+.fighter.active::before{opacity:1}
+.mover{width:100%;height:100%}
+.mover svg{width:100%;height:100%;display:block;overflow:visible}
+.rig{transform-box:view-box;transform-origin:105px 285px;animation:bob 1.1s ease-in-out infinite alternate}
+.arm-punch{display:none}
+.fighter.attack .arm-punch{display:inline}
+.fighter.attack .arm-guard{display:none}
+.fighter.attack .mover{animation:lunge .75s cubic-bezier(.3,1.4,.5,1)}
+.fighter.hit .mover{animation:recoil .55s ease-out}
+.fighter.backfire .mover{animation:glitch .1s steps(2) 8;filter:drop-shadow(0 0 22px var(--bad)) saturate(.4)}
+.fighter.heal .mover{animation:pulse .9s ease-out;filter:drop-shadow(0 0 26px var(--ok))}
+.fighter.ko .rig,.fighter.win .rig{animation:none}
+.fighter.ko .mover{transform-origin:50% 96%;animation:ko 1s forwards;filter:grayscale(.6) brightness(.7)}
+.fighter.win .mover{animation:jump .6s ease-in-out infinite alternate}
+
+.wheelcol{display:grid;justify-items:center;gap:12px;align-self:center;padding-bottom:4vh}
+.wheel-box{--wsz:min(46vh,30vw,520px);position:relative;width:var(--wsz);height:var(--wsz)}
+.wheel-box canvas{width:100%;height:100%;display:block;border-radius:50%;box-shadow:0 26px 60px rgba(0,0,0,.65),0 0 0 4px #0B0A14,0 0 0 7px #4A4170}
+.wheel-box.landed canvas{box-shadow:0 26px 60px rgba(0,0,0,.65),0 0 0 4px #0B0A14,0 0 0 7px var(--land,var(--gold)),0 0 40px var(--land,var(--gold))}
+.pointer{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:34px;height:44px;z-index:3;background:linear-gradient(90deg,#C99400,var(--gold) 45%,#B68400);clip-path:polygon(0 0,100% 0,50% 100%);filter:drop-shadow(0 4px 3px rgba(0,0,0,.6))}
+.spin{position:absolute;inset:0;margin:auto;width:27%;height:27%;border-radius:50%;border:0;padding:6px;z-index:2;background:conic-gradient(var(--gold) 0 25%,#0B0A14 0 50%,var(--gold) 0 75%,#0B0A14 0)}
+.spin span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A9A,#E0233F 55%,#7E0A1C);box-shadow:inset 0 -8px 14px rgba(0,0,0,.45),inset 0 5px 10px rgba(255,255,255,.3),0 6px 0 #3E0410;font-family:var(--f-display);font-weight:700;color:#fff;font-size:calc(var(--wsz) * .085);line-height:1;padding-top:.12em;transition:transform .08s}
+.spin:not(:disabled):active span{transform:translateY(4px)}
+.spin:not(:disabled)::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:3px solid var(--gold);animation:ping 1.5s ease-out infinite}
+.spin:disabled{cursor:default}
+.spin:disabled span{background:radial-gradient(circle at 35% 30%,#5C557A,#2C2648 60%,#1A1630);box-shadow:inset 0 -6px 12px rgba(0,0,0,.45),0 3px 0 #0B0A14;color:#8A83A8}
+.landtag{font-family:var(--f-display);font-weight:600;font-size:clamp(1.2rem,2.8vh,1.7rem);line-height:1;letter-spacing:.04em;text-transform:uppercase;min-height:1.1em;color:var(--muted);text-align:center}
+
+.fx{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+.callout{position:absolute;left:50%;top:6%;transform:translateX(-50%) skewX(-10deg);font-family:var(--f-display);font-weight:700;font-size:clamp(3rem,10vh,6.5rem);line-height:.9;white-space:nowrap;color:var(--gold);
+  text-shadow:0 0 0 #000,3px 3px 0 #0B0A14,-2px -2px 0 #0B0A14,2px -2px 0 #0B0A14,-2px 2px 0 #0B0A14,0 0 30px rgba(255,197,49,.5);animation:callout 1.5s forwards}
+.callout.red{color:var(--bad);text-shadow:3px 3px 0 #0B0A14,-2px -2px 0 #0B0A14,2px -2px 0 #0B0A14,-2px 2px 0 #0B0A14,0 0 30px rgba(255,77,77,.6)}
+.callout.green{color:var(--ok);text-shadow:3px 3px 0 #0B0A14,-2px -2px 0 #0B0A14,2px -2px 0 #0B0A14,-2px 2px 0 #0B0A14,0 0 30px rgba(59,224,138,.6)}
+.spark{position:absolute;width:clamp(120px,22vh,220px);aspect-ratio:1;margin:calc(clamp(120px,22vh,220px) / -2) 0 0 calc(clamp(120px,22vh,220px) / -2);animation:spark .45s ease-out forwards}
+.dmg{position:absolute;font-family:var(--f-display);font-weight:700;font-size:clamp(2.6rem,8vh,4.8rem);line-height:1;transform:translateX(-50%);animation:float 1.6s forwards;text-shadow:3px 3px 0 #0B0A14}
+.dmg.down{color:var(--bad)}
+.dmg.up{color:var(--ok)}
+
+.foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.prompt{font-family:var(--f-display);font-weight:600;font-size:clamp(1.3rem,3vh,1.8rem);line-height:1;letter-spacing:.03em;min-width:0}
+.prompt b{color:var(--pc,var(--gold))}
+.tools{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px}
+.tool{background:transparent;border:1px solid var(--edge);border-radius:5px;padding:6px 11px;font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tool:hover:not(:disabled){color:var(--text);border-color:var(--gold)}
+.tool:disabled{opacity:.35;cursor:not-allowed}
+.tool.armed{color:#1A1200;background:var(--bad);border-color:var(--bad)}
+
+@media(max-width:760px){
+  body{overflow:auto}
+  .hud{grid-template-columns:1fr 1fr;}
+  .center{grid-column:1/-1;grid-row:1;justify-self:center}
+  .stage{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;align-items:end;min-height:auto}
+  .wheelcol{grid-column:1/-1;grid-row:1;padding-bottom:0}
+  .wheel-box{--wsz:min(80vw,380px)}
+  .fighter{height:min(34vh,40vw)}
+  .fname,.turnflag{display:none}
+  .side.active .tname{color:var(--pc)}
+}
+
+/* ---------- overlays ---------- */
+.ov{position:fixed;inset:0;z-index:20;display:flex;overflow-y:auto;background:rgba(6,5,12,.86);backdrop-filter:blur(6px);
+  padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.card{--cc:var(--gold);margin:auto;width:min(1080px,100%);background:linear-gradient(180deg,#221B3E,#17122B);border:2px solid var(--cc);border-radius:12px;box-shadow:0 0 0 4px #0B0A14,0 0 60px color-mix(in srgb,var(--cc) 35%,transparent);display:grid;gap:18px;padding:clamp(18px,3vh,30px) clamp(18px,3vw,36px);animation:pop .3s cubic-bezier(.2,1.4,.5,1)}
+.chead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.chip{font-family:var(--f-display);font-weight:700;font-size:1.5rem;line-height:1;padding:5px 14px 1px;transform:skewX(-12deg);background:var(--cc);color:#0B0A14}
+.chip.ghost{background:transparent;color:var(--text);border:2px solid var(--edge)}
+.chip.dbl2{background:repeating-linear-gradient(-45deg,var(--gold) 0 10px,#FFE38A 10px 20px);color:#1A1200}
+.who{margin-left:auto;font-family:var(--f-display);font-weight:600;font-size:1.5rem;line-height:1;color:var(--pc)}
+.qtext{font-size:clamp(1.4rem,3.6vh,2.2rem);font-weight:700;line-height:1.25;margin:0;text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:700px){.opts{grid-template-columns:1fr}}
+.opt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;text-align:left;background:#120F22;border:2px solid var(--edge);border-radius:8px;padding:14px 16px;font-size:clamp(1.05rem,2.6vh,1.4rem);font-weight:600;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt:disabled{cursor:default}
+.opt .k{font-family:var(--f-display);font-weight:700;font-size:1.6rem;line-height:1;width:1.6em;height:1.6em;padding-top:.12em;display:grid;place-items:center;background:#2A2348;border-radius:4px}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,#120F22)}
+.opt.right .k{background:var(--ok);color:#0B0A14}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 18%,#120F22)}
+.opt.wrong .k{background:var(--bad);color:#0B0A14}
+.opt.dim{opacity:.45}
+.tbar{height:10px;background:#120F22;border-radius:5px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:var(--gold);transform-origin:left;transition:transform 1s linear}
+.tbar.urgent i{background:var(--bad)}
+.crow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.crow .sp{margin-left:auto}
+.verdict{display:grid;gap:8px;border-left:6px solid var(--vc,var(--ok));padding:6px 0 6px 16px}
+.verdict h3{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(2rem,5vh,3rem);line-height:.95;color:var(--vc,var(--ok));letter-spacing:.02em}
+.verdict p{margin:0;font-size:clamp(1.05rem,2.5vh,1.3rem);max-width:70ch}
+.verdict ul{margin:0;padding-left:1.2em;display:grid;gap:4px;font-size:clamp(1rem,2.4vh,1.2rem)}
+.btn.next{background:var(--gold);color:#1A1200;border-color:transparent;font-family:var(--f-display);font-weight:700;font-size:1.6rem;line-height:1;padding:10px 26px 6px;transform:skewX(-8deg)}
+
+/* phishing popup */
+.phish{margin:auto;width:min(620px,100%);background:#F4F6FA;color:#14182A;border-radius:12px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 4px #0B0A14;animation:pop .35s cubic-bezier(.2,1.4,.5,1)}
+.phish .bar2{display:flex;align-items:center;gap:8px;background:#DDE2EC;padding:10px 14px;font-weight:700;font-size:.95rem}
+.phish .bar2 i{width:12px;height:12px;border-radius:50%;background:#FF5F57}
+.phish .bar2 i:nth-child(2){background:#FEBC2E}.phish .bar2 i:nth-child(3){background:#28C840}
+.phish .body{padding:22px 26px 26px;display:grid;gap:14px}
+.phish h2{margin:0;font-size:clamp(1.5rem,3.6vh,2.1rem);line-height:1.15;text-wrap:balance}
+.phish p{margin:0;font-size:clamp(1.1rem,2.6vh,1.35rem)}
+.phish .pbtns{display:flex;flex-wrap:wrap;gap:12px}
+.phish .pbtns button{flex:1;min-width:150px;border:0;border-radius:8px;padding:14px;font-weight:700;font-size:1.2rem}
+.pb-claim{background:#16A34A;color:#fff}
+.pb-reject{background:#E2E6EE;color:#14182A}
+.phish .tbar{background:#DDE2EC}
+
+/* banner (round intro, K.O.) */
+.banner{position:fixed;inset:0;z-index:30;display:grid;place-items:center;pointer-events:none;background:rgba(6,5,12,.55)}
+.banner .big{font-family:var(--f-display);font-weight:700;font-size:clamp(5rem,22vh,15rem);line-height:.85;color:var(--gold);transform:skewX(-10deg);text-align:center;
+  text-shadow:5px 5px 0 #0B0A14,-3px -3px 0 #0B0A14,3px -3px 0 #0B0A14,-3px 3px 0 #0B0A14,0 0 60px rgba(255,197,49,.55);animation:slam .45s cubic-bezier(.2,1.5,.5,1)}
+.banner .big.red{color:var(--bad);text-shadow:5px 5px 0 #0B0A14,-3px -3px 0 #0B0A14,3px -3px 0 #0B0A14,-3px 3px 0 #0B0A14,0 0 60px rgba(255,77,77,.6)}
+.banner .sub{display:block;font-size:.32em;line-height:1.1;color:var(--text);letter-spacing:.06em}
+
+/* winner */
+.win-card{--cc:var(--gold)}
+.win-grid{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:24px;align-items:center}
+@media(max-width:700px){.win-grid{grid-template-columns:1fr}.win-grid .wf{max-width:180px;margin:auto}}
+.wf .fighter{height:auto;width:100%}
+.wtitle{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(3rem,10vh,6rem);line-height:.85;color:var(--gold);transform:skewX(-8deg);overflow-wrap:anywhere}
+.wsub{margin:6px 0 0;color:var(--muted);font-size:1.1rem}
+.scores{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.scores span{font-family:var(--f-display);font-weight:600;font-size:1.4rem;line-height:1;padding:6px 12px 2px;border:2px solid var(--edge);border-radius:6px}
+.take{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.take li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;font-size:clamp(1.05rem,2.5vh,1.3rem)}
+.take li b{font-family:var(--f-display);font-weight:700;font-size:1.5rem;line-height:1;color:#0B0A14;background:var(--gold);padding:3px 9px 0;transform:skewX(-10deg)}
+.lbl{margin:0;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+@keyframes bob{to{transform:translateY(5px)}}
+@keyframes lunge{0%{transform:none}35%{transform:translateX(42%)}55%{transform:translateX(38%)}100%{transform:none}}
+@keyframes recoil{0%{transform:none;filter:none}15%{transform:translateX(-14%) rotate(-4deg);filter:brightness(3) saturate(0)}45%{filter:none}100%{transform:none}}
+@keyframes glitch{0%{transform:translate(-3%,1%)}100%{transform:translate(3%,-1%)}}
+@keyframes pulse{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes ko{0%{transform:none}25%{transform:translate(-18%,-10%) rotate(-18deg)}100%{transform:translate(-26%,4%) rotate(-84deg)}}
+@keyframes jump{to{transform:translateY(-7%)}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-12px,4px)}40%{transform:translate(10px,-6px)}60%{transform:translate(-8px,3px)}80%{transform:translate(5px,-2px)}}
+@keyframes spark{0%{transform:scale(.2) rotate(0);opacity:1}100%{transform:scale(1.3) rotate(25deg);opacity:0}}
+@keyframes float{0%{opacity:0;transform:translate(-50%,20px) scale(.7)}12%{opacity:1;transform:translate(-50%,0) scale(1.15)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px)}}
+@keyframes callout{0%{opacity:0;transform:translateX(-50%) skewX(-10deg) scale(2.2)}12%{opacity:1;transform:translateX(-50%) skewX(-10deg) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) skewX(-10deg) scale(1.05)}}
+@keyframes slam{0%{transform:skewX(-10deg) scale(2.6);opacity:0}100%{transform:skewX(-10deg) scale(1);opacity:1}}
+@keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:none;opacity:1}}
+@keyframes ping{0%{transform:scale(.92);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+@keyframes blink{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div id="app">
+  <!-- ===== SETUP ===== -->
+  <section id="setup" class="setup">
+    <div class="brand">
+      <h1 class="logo">Cyber <em>K.O.</em></h1>
+      <span class="vs-word">CHAPTER 6</span>
+    </div>
+    <p class="lede">Two teams, two fighters, 100 HP each. Answer Chapter 6 cyber security questions to land attacks. Answer wrong and your attack backfires on you.</p>
+
+    <div class="pick">
+      <div class="pcard p1">
+        <span class="ptag">PLAYER 1</span>
+        <div class="field"><label for="name0">Team name</label><input id="name0" maxlength="22" value="Team Firewall"></div>
+        <div class="roster" id="roster0" role="group" aria-label="Player 1 fighter"></div>
+        <p class="fdesc" id="fdesc0"></p>
+      </div>
+      <div class="vs-mid">VS</div>
+      <div class="pcard p2">
+        <span class="ptag">PLAYER 2</span>
+        <div class="field"><label for="name1">Team name</label><input id="name1" maxlength="22" value="Team Packet"></div>
+        <div class="roster" id="roster1" role="group" aria-label="Player 2 fighter"></div>
+        <p class="fdesc" id="fdesc1"></p>
+      </div>
+    </div>
+
+    <dl class="rules">
+      <div><dt>Spin</dt><dd>The wheel picks the question topic <b>and</b> the attack damage (10, 20 or 30).</dd></div>
+      <div><dt>Answer</dt><dd>30 seconds. The team discusses, the <b>captain</b> gives the final answer.</dd></div>
+      <div><dt>Hit or backfire</dt><dd>Right: you hit the opponent. Wrong or no answer: you take the damage.</dd></div>
+      <div><dt>Double damage</dt><dd>A wrong answer makes the next turn worth double. It never stacks.</dd></div>
+      <div><dt>Rounds</dt><dd>4 rounds, 2 turns per team each. Final round: <b>+10 ultimate damage</b>.</dd></div>
+      <div><dt>K.O.</dt><dd>0 HP loses at once. Otherwise the higher HP after Round 4 wins. A tie goes to sudden death.</dd></div>
+      <div><dt class="warn">Warning</dt><dd>Not everything on screen can be trusted.</dd></div>
+    </dl>
+
+    <div class="cta">
+      <button class="btn go" id="startBtn">FIGHT!</button>
+      <button class="btn" id="resumeBtn" hidden>Resume saved game</button>
+      <span class="keys"><kbd>Space</kbd> spin / continue · <kbd>A</kbd>–<kbd>D</kbd> answer · <kbd>N</kbd> no answer · <kbd>F</kbd> fullscreen</span>
+    </div>
+  </section>
+
+  <!-- ===== GAME ===== -->
+  <section id="game" class="game" hidden>
+    <header class="hud">
+      <div class="side p1" id="side0">
+        <div class="nameline"><span class="tname" id="tn0"></span><span class="fname" id="fn0"></span><span class="turnflag">YOUR TURN</span></div>
+        <div class="bar"><i class="trail" id="tr0"></i><i class="fill" id="fl0"></i><i class="shine"></i></div>
+        <div class="hpline"><span class="hpnum" id="hp0">100</span><span>HP</span><span class="dbl" id="db0" hidden>DOUBLE DMG</span></div>
+      </div>
+      <div class="center">
+        <div class="clock" id="clock"><b id="clockNum">VS</b></div>
+        <span class="rnd" id="rnd">Round 1</span>
+        <div class="pips" id="pips"></div>
+      </div>
+      <div class="side p2" id="side1">
+        <div class="nameline"><span class="tname" id="tn1"></span><span class="fname" id="fn1"></span><span class="turnflag">YOUR TURN</span></div>
+        <div class="bar"><i class="trail" id="tr1"></i><i class="fill" id="fl1"></i><i class="shine"></i></div>
+        <div class="hpline"><span class="hpnum" id="hp1">100</span><span>HP</span><span class="dbl" id="db1" hidden>DOUBLE DMG</span></div>
+      </div>
+    </header>
+
+    <main class="stage" id="stage">
+      <div class="slot"><div class="fighter p1" id="f0"><div class="mover"></div></div></div>
+      <div class="wheelcol">
+        <div class="wheel-box" id="wbox">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="1000" height="1000" aria-label="Category wheel"></canvas>
+          <button class="spin" id="spinBtn" aria-label="Spin the wheel"><span>SPIN</span></button>
+        </div>
+        <div class="landtag" id="landtag"></div>
+      </div>
+      <div class="slot"><div class="fighter p2" id="f1"><div class="mover"></div></div></div>
+      <div class="fx" id="fx"></div>
+    </main>
+
+    <footer class="foot">
+      <div class="prompt" id="prompt"></div>
+      <div class="tools">
+        <button class="tool" id="undoBtn" title="Go back to before the last spin">Undo last spin</button>
+        <button class="tool" id="muteBtn">Sound: on</button>
+        <button class="tool" id="fsBtn">Fullscreen</button>
+        <button class="tool" id="restartBtn">Restart</button>
+      </div>
+    </footer>
+  </section>
+</div>
+
+<div class="ov" id="qov" hidden></div>
+<div class="banner" id="banner" hidden></div>
+
+<script>
+/* ================= DATA ================= */
+const FIGHTERS=[
+ {id:"cipher",name:"Cipher",acc:"#9BF0FF",desc:"Hooded encryption specialist. Turns plaintext into pain."},
+ {id:"patch",name:"Patch",acc:"#FFC531",desc:"Fixes every security hole, then hits harder."},
+ {id:"nullx",name:"Null",acc:"#7CFF9B",desc:"Android with a firewall core. Blocks first, asks later."},
+ {id:"rootkit",name:"Rootkit",acc:"#C78BFF",desc:"Hides in plain sight. Strikes when you least expect it."}];
+const CATS={
+ mal:{label:"Malware",color:"#FF5C8A",move:"Worm Strike"},
+ atk:{label:"Attacks",color:"#FF9A3C",move:"SYN Flood Rush"},
+ def:{label:"Defenses",color:"#33D1C6",move:"Firewall Slam"},
+ cia:{label:"CIA Triad",color:"#4C8DFF",move:"Triad Combo"},
+ eth:{label:"Ethics",color:"#B47CFF",move:"Ethics Uppercut"},
+ mys:{label:"Mystery",color:"#FFC531",move:"???"}};
+/* One wheel decides topic AND damage. Edit the numbers here to rebalance. */
+const SLICES=[{c:"mal",dmg:10},{c:"atk",dmg:20},{c:"def",dmg:30},{c:"cia",dmg:10},{c:"eth",dmg:20},{c:"mys",dmg:20}];
+const ROUNDS=4,TURNS_PER_ROUND=4,ULT_BONUS=10,QTIME=30;
+const RNAMES=["Easy","Medium","Hard","Final"];
+const ICONS={
+  mal:"M8 10h8v6a4 4 0 0 1-8 0z M9.5 10a2.5 2.5 0 0 1 5 0 M3.5 13h4.5 M16 13h4.5 M5 8l3 2 M19 8l-3 2 M5 19l3-2 M19 19l-3-2 M12 12v7",
+  atk:"M13 2 4 14h7l-1 8 9-12h-7z",
+  def:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M8.5 12l2.5 2.5 4.5-5",
+  cia:"M6 11h12v10H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3 M12 15v2.5",
+  eth:"M12 4v16 M7 20h10 M4 7h16 M4 7l-2.5 6a2.5 2.5 0 0 0 5 0z M20 7l-2.5 6a2.5 2.5 0 0 0 5 0z",
+  mys:"M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.8V15 M12 18.5v.5"};
+
+// d = difficulty (1 easy … 4 final). a = index of correct option.
+const QS=[
+ {id:"m1",c:"mal",d:1,q:"A piece of code that copies itself by attaching to another program (a host file). What is it?",o:["Worm","Virus","Trojan horse","Firewall"],a:1,e:"A virus needs a host program to spread. A worm is self-contained."},
+ {id:"m2",c:"mal",d:1,q:"A self-contained program that spreads across a network by exploiting security holes, with no host file needed.",o:["Virus","Honeypot","Worm","Spam"],a:2,e:"Worms spread on their own through networks, like Code Red, Blaster and Sasser."},
+ {id:"m3",c:"mal",d:2,q:"You download a free game. It works, but it secretly records every key you type and sends it to an attacker. What is it?",o:["Trojan horse","Worm","Denial-of-service","Virus"],a:0,e:"A Trojan horse looks harmless but hides a sinister purpose, such as a keylogger."},
+ {id:"m4",c:"mal",d:2,q:"Which of these is a famous WORM (not a virus)?",o:["Melissa","Michelangelo","Brain","Code Red"],a:3,e:"Code Red is a worm. Melissa, Michelangelo and Brain are viruses."},
+ {id:"m5",c:"mal",d:3,q:"A Remote Access Trojan (RAT) such as Back Orifice or SubSeven lets the attacker…",o:["Speed up the victim's internet","Access and control the victim's computer","Scan the computer for viruses","Encrypt files to keep them safe"],a:1,e:"A RAT gives the attacker remote access to the victim's computer."},
+ {id:"m6",c:"mal",d:4,q:"Robert Morris's Internet Worm (1988) infected about 6,000 Unix computers. What happened to him?",o:["Nothing, it was an accident","10 years in prison","3 years' probation, 400 hours of community service and about $150,000 in legal fees and fines","He was hired by the government"],a:2,e:"He was also suspended from Cornell. Even if he meant no harm, releasing it was wrong."},
+ {id:"a1",c:"atk",d:1,q:"An attack designed to stop legitimate users from using a computer service is called…",o:["Phishing","Denial-of-service (DoS)","Encryption","Authentication"],a:1,e:"The goal of DoS is to disrupt a server's ability to respond to its users."},
+ {id:"a2",c:"atk",d:1,q:"Someone calls you, pretends to be IT support, and asks for your password. This is…",o:["Social engineering","A worm","A SYN flood","A firewall breach"],a:0,e:"Social engineering means manipulating people instead of hacking machines."},
+ {id:"a3",c:"atk",d:2,q:"An attacker starts many connections to a server but never finishes them, so the server keeps waiting and gets stuck. What attack is this?",o:["Smurf attack","Email bombing","SYN flood","Dumpster diving"],a:2,e:"A SYN flood blocks the server by never completing the connection."},
+ {id:"a4",c:"atk",d:2,q:"Searching through a company's rubbish to find passwords and confidential papers is called…",o:["Dumpster diving","Spoofing","Honeypotting","Phishing"],a:0,e:"Early hackers guessed passwords, went dumpster diving and used social engineering."},
+ {id:"a5",c:"atk",d:3,q:"Which attack floods a target using spoofed broadcast ping messages?",o:["SYN flood","Smurf attack","Trojan horse","Email bombing"],a:1,e:"The smurf attack is named after its exploit program."},
+ {id:"a6",c:"atk",d:3,q:"Why is a denial-of-service attack called an 'asymmetrical attack'?",o:["It only attacks on odd-numbered days","An attacker with limited resources (an old PC) can disable a much bigger, more powerful site","It needs two attackers working together","It only affects one side of the network"],a:1,e:"That is also why DoS may appeal to terrorists: small effort, big damage."},
+ {id:"a7",c:"atk",d:4,q:"In a DISTRIBUTED denial-of-service (DDoS) attack, where does the attack traffic come from?",o:["One very fast supercomputer","The victim's own server","Thousands of hijacked computers attacking at the same time","The internet service provider"],a:2,e:"Defence: secure computers so they can't be hijacked, and check for forged IP addresses."},
+ {id:"d1",c:"def",d:1,q:"Checking that a person really is who they claim to be is called…",o:["Authorization","Encryption","Authentication","Auditing"],a:2,e:"Authentication = who you are. Authorization = what you are allowed to do."},
+ {id:"d2",c:"def",d:1,q:"A system that monitors packets entering and leaving a network and blocks unwanted traffic is a…",o:["Firewall","Honeypot","Proxy server","Worm"],a:0,e:"A firewall enforces a boundary between networks."},
+ {id:"d3",c:"def",d:2,q:"A decoy server full of fake information, isolated from the real network, used to trap and record hackers. What is it?",o:["Firewall","Antivirus","Honeypot","Backup server"],a:2,e:"A honeypot confuses intruders, traces them and logs evidence for prosecution."},
+ {id:"d4",c:"def",d:2,q:"An intrusion detection system raises an alarm because a staff member from another department logs into the accounting system at 3 a.m. Which IDS approach is this?",o:["Knowledge-based","Behavior-based","Encryption-based","Password-based"],a:1,e:"Behavior-based IDS compares activity to a model of normal behaviour and alerts on anything unusual."},
+ {id:"d5",c:"def",d:3,q:"In public-key cryptography, which key does someone use to encrypt a message to YOU?",o:["Their own private key","Your private key","Your public key","A key written on paper"],a:2,e:"Anyone can encrypt with your public key. Only your private key can decrypt it."},
+ {id:"d6",c:"def",d:4,q:"An employee resigns today. To guard against malicious insiders, what should the company do?",o:["Keep the account active for a month for handover","Promptly delete their accounts, login IDs and passwords","Only change the Wi-Fi password","Nothing, former staff can be trusted"],a:1,e:"Other insider safeguards: separate responsibilities, rotate sensitive positions and keep audit trails."},
+ {id:"c1",c:"cia",d:1,q:"Your exam results are leaked to strangers on social media. Which security goal failed?",o:["Availability","Integrity","Confidentiality","Consistency"],a:2,e:"Confidentiality protects information from unauthorized disclosure."},
+ {id:"c2",c:"cia",d:1,q:"The university portal goes down during course registration because of an attack. Which security goal failed?",o:["Availability","Confidentiality","Integrity","Authorization"],a:0,e:"Availability means information is there for the people who need it, when they need it."},
+ {id:"c3",c:"cia",d:2,q:"A hacker secretly changes students' grades in the database. Which security goal failed?",o:["Confidentiality","Availability","Integrity","Authentication"],a:2,e:"Integrity prevents unauthorized modification of data."},
+ {id:"c4",c:"cia",d:2,q:"A virus damages a computer's operating system and application software. Which aspect of cyber security is under attack?",o:["Data security","System security","Network security","Physical security"],a:1,e:"System security protects hardware, operating systems and application software."},
+ {id:"c5",c:"cia",d:3,q:"According to Garfinkel and Spafford, a computer is secure when…",o:["It is new and expensive","You can depend on it and its software behaves as you expect","It has an antivirus installed","Only the admin can log in"],a:1,e:"Two conditions: you can depend on it, and it behaves as expected."},
+ {id:"c6",c:"cia",d:4,q:"In 1990, AT&T's long-distance network crashed because of a software glitch, not a hacker. What lesson does this teach?",o:["Software glitches can't crash networks","It is not always easy to tell whether a disruption is malicious or a system failure","All network crashes are caused by hackers","Telephone networks can't be attacked"],a:1,e:"Network security incidents are not always caused by attackers."},
+ {id:"e1",c:"eth",d:1,q:"In the 1960s–70s, what did the word 'hacker' originally mean?",o:["A criminal who steals money online","A creative programmer who wrote clever code","Someone who spreads viruses","A government spy"],a:1,e:"Hacking started as a positive term. It turned negative from the 1970s to 1990s."},
+ {id:"e2",c:"eth",d:1,q:"A hacker says: 'I broke into your system to show it's weak. You should thank me.' The chapter compares this to…",o:["Thanking a burglar for proving your home alarm doesn't work","Thanking a teacher for marking your exam","Thanking a doctor for a check-up","Paying a mechanic to fix your car"],a:0,e:"Exposing a weakness does not make the break-in right."},
+ {id:"e3",c:"eth",d:2,q:"'Hacking only causes virtual harm, not real harm.' Why is this claim wrong?",o:["Because computers are expensive","Online actions like stolen data or false accusations hurt real people","Because hacking is always illegal","It is actually correct"],a:1,e:"What happens in cyberspace affects real people in the real world."},
+ {id:"e4",c:"eth",d:2,q:"Spafford rejects the hacker belief that 'all information should be free' mainly because…",o:["Information would become too expensive","Privacy, and the integrity and accuracy of information, would not be possible","The internet would become slower","Hackers would lose their jobs"],a:1,e:"If all information were free, nobody could keep anything private or trustworthy."},
+ {id:"e5",c:"eth",d:3,q:"Morris used other people's computers without permission. Which theory says this is wrong because he treated people merely as a means to an end?",o:["Utilitarianism","Social contract theory","Kantian ethics (deontology)","Virtue ethics"],a:2,e:"Kant: always treat people as ends in themselves, never merely as a means."},
+ {id:"e6",c:"eth",d:3,q:"How would a UTILITARIAN judge the release of the Internet worm?",o:["Right, because organisations learned about security flaws","Wrong, because the harms (crashed computers, lost time, disrupted network) outweigh the benefits","Neutral, because no law existed","Right, because Morris was a student"],a:1,e:"Utilitarians weigh total benefits against total harms. Here the harms win."},
+ {id:"e7",c:"eth",d:4,q:"Social contract theory says Morris was wrong because…",o:["He broke a promise to his professor","He violated the property rights of the organisations","He was unhappy","He did not have a degree"],a:1,e:"Respecting property rights is part of the rules we all agree to live by."},
+ {id:"e8",c:"eth",d:4,q:"A student finds the exam answers on the lecturer's unprotected shared drive and copies them 'because it wasn't locked'. Which is the most ethical view?",o:["It's fine, the lecturer should have locked it","It's fine if they don't share it","It's wrong: weak security doesn't make unauthorized access right","It's only wrong if they get caught"],a:2,e:"An unlocked door is not permission to walk in."}
+];
+const SD=[
+ {id:"s1",c:"def",d:4,q:"Which countermeasure turns plaintext into meaningless ciphertext?",o:["Firewall","Encryption","Honeypot","Audit trail"],a:1,e:"Encryption hides data from anyone who intercepts it."},
+ {id:"s2",c:"eth",d:4,q:"Kevin Mitnick, 'Public Cyberenemy No. 1', broke into which system at age 18 in 1982?",o:["NASA","North American Air Defense Command","Microsoft","Citicorp"],a:1,e:"His activities spanned nearly 20 years."},
+ {id:"s3",c:"atk",d:4,q:"Which Malaysian law deals directly with unauthorized access to computers?",o:["Digital Signature Act 1997","Telemedicine Act 1997","Computer Crimes Act 1997","Copyright Act 1987"],a:2,e:"It is one of Malaysia's cyber laws from 1997."}
+];
+const TRAPS=[
+ {id:"t1",from:"🎁 SYSTEM BONUS",title:"Congratulations! You've been selected!",msg:"Your fighter qualifies for a FREE +50 HP power-up. This offer expires in 10 seconds!",flags:["Too good to be true: a free reward out of nowhere","Fake urgency: 'expires in 10 seconds'","You never asked for this offer"]},
+ {id:"t2",from:"⚠️ IT SUPPORT · URGENT",title:"Free HP Shield for your fighter",msg:"Your password expires today. Claim your free HP Shield now by confirming your captain's password.",flags:["Real IT staff never ask for your password","Pretends to be an authority (social engineering)","Pressure to act fast"]},
+ {id:"t3",from:"📎 New file from: Lecturer",title:"HP_Booster.exe",msg:"Claim this file to instantly DOUBLE your fighter's HP!",flags:["An .exe attachment is a classic Trojan horse","The sender's name can easily be faked","It promises a reward for running a program"]}
+];
+const TRAP_LESSON="This is social engineering: attackers trick people instead of machines. Think before you click, and report anything suspicious.";
+const TAKEAWAYS=["Hacking is not only virtual: stolen data and broken systems harm real people.","Good intentions do not make unauthorized access ethical. The Morris worm caused real damage.","Security is everyone's job: protect passwords, think before clicking, and report anything suspicious."];
+
+/* ================= FIGHTER ART ================= */
+const SKIN="#D9A07A",PANTS="#262242",SHOE="#0E0C1A";
+function headgear(id,col,acc){
+  if(id==="cipher")return `<path d="M82 74 Q80 34 110 36 Q138 38 134 64 L128 62 Q124 50 108 50 Q94 52 94 82 Z" fill="${col}" stroke="#0B0A14" stroke-width="2"/><path d="M90 90 L52 78 L58 96 Z" fill="${acc}"/><rect x="88" y="86" width="40" height="9" rx="3" fill="${acc}"/>`;
+  if(id==="patch")return `<path d="M86 60 Q90 40 110 42 Q128 44 130 56 Z" fill="#1C1A2E"/><rect x="85" y="54" width="47" height="8" rx="2" fill="${acc}"/><path d="M87 57 L56 46 M87 59 L58 68" stroke="${acc}" stroke-width="6" stroke-linecap="round"/>`;
+  if(id==="nullx")return `<circle cx="108" cy="66" r="26" fill="#3A3F5C" stroke="#0B0A14" stroke-width="2"/><rect x="104" y="57" width="32" height="12" rx="6" fill="${acc}"/><path d="M96 42 L90 26" stroke="#3A3F5C" stroke-width="4"/><circle cx="90" cy="25" r="4" fill="${acc}"/>`;
+  return `<path d="M84 66 L78 40 L94 50 L94 28 L106 46 L116 28 L120 46 L134 38 L130 62 Z" fill="#1C1A2E"/><path d="M78 40 L84 46 M94 28 L96 36 M116 28 L114 36 M134 38 L130 44" stroke="${acc}" stroke-width="4" stroke-linecap="round"/>`;
+}
+function fighterSVG(fid,col){
+  const f=FIGHTERS.find(x=>x.id===fid)||FIGHTERS[0],acc=f.acc;
+  const eye=fid==="nullx"?"":`<rect x="116" y="61" width="11" height="4" rx="2" fill="#0B0A14"/>`;
+  return `<svg viewBox="0 0 220 300" aria-hidden="true"><g class="rig">
+  <path d="M96 168 L72 226 L52 280" stroke="${PANTS}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M40 284 h28" stroke="${SHOE}" stroke-width="11" stroke-linecap="round"/>
+  <path d="M88 104 L100 140 L130 122" stroke="${SKIN}" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="132" cy="120" r="11" fill="${acc}" stroke="#0B0A14" stroke-width="2"/>
+  <path d="M76 96 Q105 84 134 96 L124 172 L86 172 Z" fill="${col}" stroke="#0B0A14" stroke-width="2"/>
+  <path d="M104 92 L104 170" stroke="rgba(0,0,0,.25)" stroke-width="3"/>
+  <rect x="84" y="160" width="42" height="11" rx="2" fill="${acc}" stroke="#0B0A14" stroke-width="2"/>
+  <path d="M114 168 L140 224 L154 280" stroke="${PANTS}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M146 284 h28" stroke="${SHOE}" stroke-width="11" stroke-linecap="round"/>
+  <rect x="100" y="80" width="16" height="16" fill="${SKIN}"/>
+  <circle cx="108" cy="66" r="23" fill="${SKIN}"/>${eye}
+  ${headgear(fid,col,acc)}
+  <g class="arm-guard"><path d="M124 104 L146 136 L164 104" stroke="${SKIN}" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="166" cy="100" r="12" fill="${acc}" stroke="#0B0A14" stroke-width="2"/></g>
+  <g class="arm-punch"><path d="M124 104 L204 98" stroke="${SKIN}" stroke-width="15" stroke-linecap="round" fill="none"/><circle cx="208" cy="98" r="14" fill="${acc}" stroke="#0B0A14" stroke-width="2"/><path d="M222 86 l14 -8 M224 98 h16 M222 110 l14 8" stroke="${acc}" stroke-width="4" stroke-linecap="round"/></g>
+  </g></svg>`;
+}
+const portraitSVG=(fid,col)=>fighterSVG(fid,col).replace('viewBox="0 0 220 300"','viewBox="60 16 100 100"');
+const TEAMCOL=["#2FB8FF","#FF3D5A"];
+
+/* ================= UTIL ================= */
+const KEY="server-siege-versus-v1";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?Math.min(ms,150):ms));
+const lsGet=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){return null}};
+const lsSet=v=>{try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}};
+const lsDel=()=>{try{localStorage.removeItem(KEY)}catch(e){}};
+let S=null,prevSnap=null,timerId=null,tLeft=0,muted=false,AC=null,picks=["cipher","rootkit"];
+
+/* sound */
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==="suspended")AC.resume();return AC}
+function tone(f,d=.15,type="sine",v=.12,at=0,f2){if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+at,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}
+function noise(d=.15,v=.25){if(muted)return;const a=ac();if(!a)return;const b=a.createBuffer(1,a.sampleRate*d,a.sampleRate),ch=b.getChannelData(0);for(let i=0;i<ch.length;i++)ch[i]=(Math.random()*2-1)*(1-i/ch.length);const s=a.createBufferSource(),g=a.createGain();s.buffer=b;g.gain.value=v;s.connect(g).connect(a.destination);s.start()}
+const SFX={
+ tick:()=>tone(1500,.02,"square",.03),
+ beep:()=>tone(880,.07,"square",.05),
+ open:()=>tone(200,.3,"sawtooth",.05,0,1000),
+ punch:()=>{noise(.18,.35);tone(130,.25,"sine",.45,0,45)},
+ good:()=>{tone(523,.12,"triangle",.15);tone(784,.25,"triangle",.15,.1)},
+ bad:()=>{tone(220,.45,"sawtooth",.1,0,70)},
+ zap:()=>{tone(900,.3,"sawtooth",.08,0,60);noise(.25,.15)},
+ heal:()=>tone(420,.35,"triangle",.14,0,1300),
+ fight:()=>{tone(392,.15,"square",.08);tone(523,.15,"square",.08,.14);tone(784,.4,"square",.09,.28)},
+ ko:()=>{tone(90,1.1,"sine",.5,0,30);noise(.6,.3)},
+ win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.3,"triangle",.13,i*.14))};
+
+/* ================= SETUP ================= */
+function initSetup(){
+  [0,1].forEach(p=>{
+    const r=$("#roster"+p);
+    r.innerHTML=FIGHTERS.map(f=>`<button class="rbtn" data-f="${f.id}" aria-pressed="${picks[p]===f.id}">${portraitSVG(f.id,TEAMCOL[p])}<span>${f.name}</span></button>`).join("");
+    r.onclick=e=>{const b=e.target.closest(".rbtn");if(!b)return;picks[p]=b.dataset.f;r.querySelectorAll(".rbtn").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#fdesc"+p).textContent=FIGHTERS.find(f=>f.id===picks[p]).desc;SFX.beep()};
+    $("#fdesc"+p).textContent=FIGHTERS.find(f=>f.id===picks[p]).desc;
+  });
+  const saved=lsGet();$("#resumeBtn").hidden=!(saved&&saved.S);
+}
+function newGame(){
+  const names=[0,1].map(i=>$("#name"+i).value.trim()||("Team "+(i+1)));
+  S={teams:[0,1].map(i=>({name:names[i],f:picks[i],hp:100})),turn:0,double:false,used:[],usedTraps:[],usedSD:[],angle:0,phase:"idle",cur:null,over:null};
+  prevSnap=null;enterGame();roundIntro();
+}
+function enterGame(){
+  $("#setup").hidden=true;$("#game").hidden=false;
+  [0,1].forEach(i=>{$("#f"+i+" .mover").innerHTML=fighterSVG(S.teams[i].f,TEAMCOL[i]);$("#f"+i).className="fighter p"+(i+1)});
+  drawWheel();setAngle(S.angle);render();save();
+}
+
+/* ================= WHEEL ================= */
+const cv=()=>$("#wheel");
+function drawWheel(){
+  const c=cv(),x=c.getContext("2d"),C=500,R=488,n=SLICES.length,step=2*Math.PI/n;
+  x.clearRect(0,0,1000,1000);
+  SLICES.forEach((s,i)=>{
+    const a0=-Math.PI/2+i*step,a1=a0+step,col=CATS[s.c].color;
+    const g=x.createRadialGradient(C,C,60,C,C,R);g.addColorStop(0,"#0B0A14");g.addColorStop(.35,col);g.addColorStop(1,col);
+    x.beginPath();x.moveTo(C,C);x.arc(C,C,R,a0,a1);x.closePath();x.fillStyle=g;x.fill();
+    x.lineWidth=8;x.strokeStyle="#0B0A14";x.stroke();
+    x.save();x.translate(C,C);x.rotate(a0+step/2+Math.PI/2);
+    x.fillStyle="#0B0A14";x.textAlign="center";x.textBaseline="middle";
+    x.font="700 64px Teko, 'Arial Narrow', sans-serif";x.fillText(CATS[s.c].label.toUpperCase(),0,-300);
+    x.font="700 50px Teko, 'Arial Narrow', sans-serif";x.fillText(s.c==="mys"?"? ? ?":s.dmg+" DMG",0,-232);
+    x.save();x.translate(-36,-440);x.scale(3,3);x.lineWidth=2.4;x.lineCap="round";x.lineJoin="round";x.strokeStyle="#0B0A14";x.stroke(new Path2D(ICONS[s.c]));x.restore();
+    x.restore();
+  });
+  x.beginPath();x.arc(C,C,R,0,2*Math.PI);x.lineWidth=14;x.strokeStyle="#0B0A14";x.stroke();
+  for(let i=0;i<36;i++){const a=i/36*2*Math.PI;x.beginPath();x.arc(C+Math.cos(a)*(R-2),C+Math.sin(a)*(R-2),5,0,2*Math.PI);x.fillStyle=i%6===0?"#FFC531":"#4A4170";x.fill()}
+}
+function setAngle(a){cv().style.transform=`rotate(${a}deg)`}
+function sliceAt(a){const th=((360-(a%360))%360+360)%360;return Math.floor(th/60)%6}
+function spinTo(k){
+  return new Promise(res=>{
+    const start=S.angle,th=k*60+8+Math.random()*44,base=((360-th)-(start%360)+720)%360;
+    const total=base+360*(reduce?1:5),dur=reduce?500:3800,t0=performance.now();let last=sliceAt(start);
+    const box=$("#wbox");box.classList.remove("landed");
+    (function f(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,4),a=start+total*e;setAngle(a);
+      const s=sliceAt(a);if(s!==last){last=s;SFX.tick()}
+      if(p<1)requestAnimationFrame(f);else{S.angle=a%360;setAngle(S.angle);box.style.setProperty("--land",CATS[SLICES[k].c].color);box.classList.add("landed");res()}})(t0);
+  });
+}
+
+/* ================= TURN LOGIC ================= */
+const active=()=>S.turn%2;
+const roundNo=()=>Math.min(ROUNDS,Math.floor(S.turn/TURNS_PER_ROUND)+1);
+function pickQ(c){
+  const r=roundNo(),pool=QS.filter(q=>!S.used.includes(q.id));
+  if(!pool.length){S.used=[];return pickQ(c)}
+  let cand=pool.filter(q=>q.c===c);if(!cand.length)cand=pool;
+  const best=Math.min(...cand.map(q=>Math.abs(q.d-r)));cand=cand.filter(q=>Math.abs(q.d-r)===best);
+  return cand[Math.floor(Math.random()*cand.length)];
+}
+function pickTrap(){let p=TRAPS.filter(t=>!S.usedTraps.includes(t.id));if(!p.length){S.usedTraps=[];p=TRAPS}return p[Math.floor(Math.random()*p.length)]}
+
+async function spin(){
+  if(!S||S.phase!=="idle")return;ac();
+  prevSnap=clone(S);S.phase="spinning";render();
+  const k=Math.floor(Math.random()*SLICES.length);
+  await spinTo(k);
+  const sl=SLICES[k],base=sl.dmg+(roundNo()===ROUNDS?ULT_BONUS:0),dmg=base*(S.double?2:1);
+  if(sl.c==="mys"){const t=pickTrap();S.usedTraps.push(t.id);S.cur={k,kind:"trap",id:t.id,base,dmg,dbl:S.double,choice:null,correct:null}}
+  else{const q=pickQ(sl.c);S.used.push(q.id);S.cur={k,kind:"q",id:q.id,base,dmg,dbl:S.double,answer:null,correct:null}}
+  $("#landtag").innerHTML=`<span style="color:${CATS[sl.c].color}">${CATS[sl.c].label}</span>`;
+  await wait(650);
+  S.phase="question";render();openCard();startTimer();save();
+}
+function startTimer(){
+  stopTimer();tLeft=QTIME;tickClock();SFX.open();
+  timerId=setInterval(()=>{tLeft--;tickClock();if(tLeft<=5&&tLeft>0)SFX.beep();if(tLeft<=0){stopTimer();timeout()}},1000);
+}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null}}
+function tickClock(){
+  const n=$("#clockNum");n.textContent=tLeft;$("#clock").classList.toggle("urgent",tLeft<=10);
+  const b=document.querySelector("#qov .tbar");if(b){b.classList.toggle("urgent",tLeft<=10);b.querySelector("i").style.transform=`scaleX(${tLeft/QTIME})`}
+}
+function timeout(){if(S.phase!=="question")return;if(S.cur.kind==="q")answer(null,true);else choose(null)}
+function answer(i,timedOut){
+  if(S.phase!=="question"||S.cur.kind!=="q")return;stopTimer();
+  const q=QS.find(x=>x.id===S.cur.id);S.cur.answer=i;S.cur.correct=i===q.a;S.cur.timedOut=!!timedOut||i===null;
+  S.phase="result";(S.cur.correct?SFX.good:SFX.bad)();renderResult();render();save();
+}
+function choose(claim){
+  if(S.phase!=="question"||S.cur.kind!=="trap")return;stopTimer();
+  S.cur.choice=claim===null?"none":claim?"claim":"reject";S.cur.correct=claim===false;
+  S.phase="result";(S.cur.correct?SFX.good:SFX.bad)();renderResult();render();save();
+}
+async function cont(){
+  if(S.phase!=="result")return;
+  $("#qov").hidden=true;S.phase="anim";render();
+  const a=active(),o=1-a,c=S.cur,d=c.dmg,F=[$("#f0"),$("#f1")],T=S.teams;
+  const move=CATS[SLICES[c.k].c].move;
+  if(c.kind==="q"&&c.correct){
+    F[a].classList.add("attack");await wait(260);
+    T[o].hp=Math.max(0,T[o].hp-d);F[o].classList.add("hit");SFX.punch();spark(F[o]);dmgPop(F[o],"−"+d,"down");callout(move.toUpperCase()+"!");shake();render();
+    await wait(700);F[a].classList.remove("attack");F[o].classList.remove("hit");
+  }else if(c.kind==="q"){
+    F[a].classList.add("backfire");SFX.zap();T[a].hp=Math.max(0,T[a].hp-d);dmgPop(F[a],"−"+d,"down");callout(c.timedOut?"TOO SLOW!":"BACKFIRE!","red");render();
+    await wait(1000);F[a].classList.remove("backfire");
+  }else if(c.correct){
+    F[a].classList.add("heal");SFX.heal();T[a].hp+=d;dmgPop(F[a],"+"+d,"up");callout("PHISH BLOCKED!","green");render();
+    await wait(1000);F[a].classList.remove("heal");
+  }else{
+    F[a].classList.add("backfire");SFX.zap();T[a].hp=Math.max(0,T[a].hp-d);dmgPop(F[a],"−"+d,"down");callout("YOU GOT PHISHED!","red");render();
+    await wait(1000);F[a].classList.remove("backfire");
+  }
+  S.double=!c.correct;
+  await wait(500);
+  const ko=T.findIndex(t=>t.hp<=0);
+  if(ko>-1){return knockout(1-ko)}
+  S.turn++;S.cur=null;$("#landtag").textContent="";$("#wbox").classList.remove("landed");
+  if(S.turn>=ROUNDS*TURNS_PER_ROUND){return timeUp()}
+  S.phase="idle";render();save();
+  if(S.turn%TURNS_PER_ROUND===0)roundIntro();
+}
+
+/* ================= FX ================= */
+function rel(el){const s=$("#stage").getBoundingClientRect(),r=el.getBoundingClientRect();return{x:r.left-s.left+r.width/2,y:r.top-s.top,w:r.width,h:r.height}}
+function spark(el){const p=rel(el),d=document.createElement("div");d.className="spark";d.style.left=p.x+"px";d.style.top=(p.y+p.h*.35)+"px";
+  d.innerHTML=`<svg viewBox="-50 -50 100 100"><polygon points="${Array.from({length:16},(_,i)=>{const r=i%2?16:48,a=i/16*Math.PI*2;return (Math.cos(a)*r).toFixed(1)+","+(Math.sin(a)*r).toFixed(1)}).join(" ")}" fill="#FFC531" stroke="#fff" stroke-width="3"/><circle r="12" fill="#fff"/></svg>`;
+  $("#fx").appendChild(d);setTimeout(()=>d.remove(),600)}
+function dmgPop(el,txt,cls){const p=rel(el),d=document.createElement("div");d.className="dmg "+cls;d.textContent=txt;d.style.left=p.x+"px";d.style.top=(p.y+p.h*.05)+"px";$("#fx").appendChild(d);setTimeout(()=>d.remove(),1700)}
+function callout(txt,cls=""){const d=document.createElement("div");d.className="callout "+cls;d.textContent=txt;$("#fx").appendChild(d);setTimeout(()=>d.remove(),1600)}
+function shake(){const s=$("#stage");s.classList.remove("shake");void s.offsetWidth;s.classList.add("shake")}
+async function banner(html,ms,red){const b=$("#banner");b.innerHTML=`<div class="big${red?" red":""}">${html}</div>`;b.hidden=false;await wait(ms);b.hidden=true}
+async function roundIntro(){
+  const r=roundNo();S.phase="intro";render();
+  await banner(r===ROUNDS?`FINAL ROUND<span class="sub">ULTIMATE: +${ULT_BONUS} DAMAGE ON EVERY HIT</span>`:`ROUND ${r}<span class="sub">${RNAMES[r-1].toUpperCase()} QUESTIONS</span>`,1500);
+  SFX.fight();await banner("FIGHT!",800);
+  if(S.phase==="intro"){S.phase="idle";render();save()}
+}
+
+/* ================= CARDS ================= */
+function openCard(){
+  const c=S.cur,a=active(),t=S.teams[a],sl=SLICES[c.k],cat=CATS[sl.c],ov=$("#qov");
+  ov.hidden=false;
+  if(c.kind==="trap"){
+    const tr=TRAPS.find(x=>x.id===c.id);
+    ov.innerHTML=`<div class="phish" role="dialog" aria-label="Incoming message"><div class="bar2"><i></i><i></i><i></i><span>${esc(tr.from)}</span></div>
+      <div class="body"><h2>${esc(tr.title)}</h2><p>${esc(tr.msg)}</p>
+      <div class="tbar"><i></i></div>
+      <div class="pbtns"><button class="pb-claim" id="claimBtn">Claim <kbd>A</kbd></button><button class="pb-reject" id="rejectBtn">Reject <kbd>B</kbd></button></div>
+      <p style="font-size:.95rem;color:#5A6178">${esc(t.name)} decides. 30 seconds.</p></div></div>`;
+    $("#claimBtn").onclick=()=>choose(true);$("#rejectBtn").onclick=()=>choose(false);
+    return;
+  }
+  const q=QS.find(x=>x.id===c.id);
+  ov.innerHTML=`<div class="card" style="--cc:${cat.color};--pc:${TEAMCOL[a]}" role="dialog" aria-label="Question">
+    <div class="chead"><span class="chip">${cat.label.toUpperCase()}</span><span class="chip ghost">${cat.move.toUpperCase()} · ${dmgLabel(c)}</span>${c.dbl?'<span class="chip dbl2">DOUBLE DAMAGE</span>':""}<span class="who">${esc(t.name)} · Round ${roundNo()}</span></div>
+    <p class="qtext">${esc(q.q)}</p>
+    <div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="k">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+    <div class="tbar"><i></i></div>
+    <div class="crow" id="crow"><span class="keys">Click the captain's answer or press <kbd>A</kbd>–<kbd>D</kbd></span><button class="tool sp" id="noAns">No answer <kbd>N</kbd></button><button class="tool" id="cUndo">Undo spin</button></div>
+  </div>`;
+  ov.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  $("#noAns").onclick=()=>answer(null,true);$("#cUndo").onclick=undo;
+}
+function dmgLabel(c){let s=c.base+" DMG";if(c.base!==SLICES[c.k].dmg)s=`${SLICES[c.k].dmg}+${ULT_BONUS} DMG`;if(c.dbl)s+=` ×2 = ${c.dmg}`;return s}
+function renderResult(){
+  const c=S.cur,a=active(),o=1-a,T=S.teams,ov=$("#qov");
+  if(c.kind==="trap"){
+    const tr=TRAPS.find(x=>x.id===c.id),ok=c.correct;
+    const head=ok?"Good call. That was a phishing trap!":c.choice==="none"?"Time's up. That was a phishing trap!":"Gotcha! That was a phishing trap!";
+    const line=ok?`${esc(T[a].name)} rejected it and <b>gains ${c.dmg} HP</b>.`:`${esc(T[a].name)} ${c.choice==="none"?"didn't decide in time":"fell for it"} and <b>loses ${c.dmg} HP</b>. Next turn is double damage.`;
+    ov.innerHTML=`<div class="card" style="--cc:${ok?"var(--ok)":"var(--bad)"};--vc:${ok?"var(--ok)":"var(--bad)"}" role="dialog" aria-label="Phishing trap result">
+      <div class="chead"><span class="chip">MYSTERY · PHISHING TRAP</span><span class="chip ghost">The reward was never real</span></div>
+      <div class="verdict"><h3>${head}</h3><p>${line}</p></div>
+      <div class="verdict" style="--vc:var(--gold)"><p class="lbl">Red flags</p><ul>${tr.flags.map(f=>`<li>${esc(f)}</li>`).join("")}</ul><p>${esc(TRAP_LESSON)}</p></div>
+      <div class="crow"><button class="tool" id="cUndo">Undo spin</button><button class="btn next sp" id="contBtn">CONTINUE <kbd>Space</kbd></button></div></div>`;
+  }else{
+    const q=QS.find(x=>x.id===c.id);
+    ov.querySelectorAll(".opt").forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add("right");else if(i===c.answer)b.classList.add("wrong");else b.classList.add("dim")});
+    const move=CATS[SLICES[c.k].c].move;
+    const head=c.correct?"Correct!":c.answer===null?"Time's up!":"Wrong!";
+    const line=c.correct?`${esc(T[a].name)} lands <b>${move}</b>: ${esc(T[o].name)} takes <b>${c.dmg} damage</b>.`:`The attack backfires: ${esc(T[a].name)} takes <b>${c.dmg} damage</b>. Next turn is double damage.`;
+    $("#crow").outerHTML=`<div class="verdict" style="--vc:${c.correct?"var(--ok)":"var(--bad)"}"><h3>${head}</h3><p>${line}</p><p style="color:var(--muted)">${esc(q.e)}</p></div>
+      <div class="crow"><button class="tool" id="cUndo">Undo spin</button><button class="btn next sp" id="contBtn">CONTINUE <kbd>Space</kbd></button></div>`;
+  }
+  $("#contBtn").onclick=cont;$("#cUndo").onclick=undo;$("#contBtn").focus({preventScroll:true});
+}
+
+/* ================= END GAME ================= */
+async function knockout(w){
+  S.phase="over";S.over={w,how:"K.O."};render();save();
+  const l=1-w;$("#f"+l).classList.add("ko");SFX.ko();shake();
+  await banner("K.O.",1900,true);
+  $("#f"+w).classList.add("win");showWinner();
+}
+async function timeUp(){
+  S.phase="ending";render();await banner("TIME!",1300);
+  const [x,y]=S.teams;
+  if(x.hp===y.hp)return suddenDeath();
+  const w=x.hp>y.hp?0:1;S.phase="over";S.over={w,how:"Higher HP after Round 4"};render();save();
+  $("#f"+w).classList.add("win");showWinner();
+}
+function suddenDeath(){
+  S.phase="sd";render();save();
+  let p=SD.filter(q=>!S.usedSD.includes(q.id));if(!p.length)p=QS.filter(q=>!S.used.includes(q.id));if(!p.length){S.usedSD=[];p=SD}
+  const q=p[Math.floor(Math.random()*p.length)];(q.id[0]==="s"?S.usedSD:S.used).push(q.id);
+  const ov=$("#qov");ov.hidden=false;SFX.open();
+  ov.innerHTML=`<div class="card" style="--cc:var(--bad)" role="dialog" aria-label="Sudden death">
+    <div class="chead"><span class="chip">SUDDEN DEATH</span><span class="chip ghost">Both fighters on ${S.teams[0].hp} HP</span><span class="who" style="color:var(--text)">First captain to shout the right answer wins</span></div>
+    <p class="qtext">${esc(q.q)}</p>
+    <div class="opts">${q.o.map((o,i)=>`<button class="opt" disabled data-i="${i}"><span class="k">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+    <div class="crow"><button class="btn" id="revealBtn">Reveal answer</button></div>
+    <div class="crow"><button class="btn" style="border-color:var(--p1)" id="sd0">${esc(S.teams[0].name)} got it</button><button class="btn" style="border-color:var(--p2)" id="sd1">${esc(S.teams[1].name)} got it</button><button class="tool sp" id="sdNone">Nobody · next question</button></div></div>`;
+  $("#revealBtn").onclick=()=>{ov.querySelectorAll(".opt").forEach((b,i)=>b.classList.add(i===q.a?"right":"dim"))};
+  [0,1].forEach(w=>$("#sd"+w).onclick=()=>{ov.hidden=true;S.phase="over";S.over={w,how:"Sudden death"};render();save();$("#f"+w).classList.add("win");$("#f"+(1-w)).classList.add("ko");showWinner()});
+  $("#sdNone").onclick=suddenDeath;
+}
+function showWinner(){
+  const w=S.over.w,T=S.teams,ov=$("#qov");SFX.win();ov.hidden=false;
+  ov.innerHTML=`<div class="card win-card" role="dialog" aria-label="Winner">
+    <div class="win-grid"><div class="wf"><div class="fighter win" style="--pc:${TEAMCOL[w]}"><div class="mover">${fighterSVG(T[w].f,TEAMCOL[w])}</div></div></div>
+    <div><p class="lbl">${esc(S.over.how)} · ${esc(FIGHTERS.find(f=>f.id===T[w].f).name)} wins</p><h2 class="wtitle">${esc(T[w].name)} wins!</h2>
+    <div class="scores"><span style="border-color:var(--p1)">${esc(T[0].name)} · ${T[0].hp} HP</span><span style="border-color:var(--p2)">${esc(T[1].name)} · ${T[1].hp} HP</span></div></div></div>
+    <p class="lbl">Key takeaways</p>
+    <ul class="take">${TAKEAWAYS.map((t,i)=>`<li><b>${i+1}</b><span>${esc(t)}</span></li>`).join("")}</ul>
+    <div class="crow"><button class="tool" id="wUndo" ${prevSnap?"":"disabled"}>Undo last turn</button><button class="btn next sp" id="wNew">NEW GAME</button></div></div>`;
+  $("#wUndo").onclick=undo;
+  armConfirm($("#wNew"),"NEW GAME","CLICK AGAIN TO CONFIRM",toSetup);
+}
+
+/* ================= RENDER / CONTROLS ================= */
+function render(){
+  if(!S)return;
+  const a=active(),busy=["spinning","anim","intro","ending"].includes(S.phase);
+  [0,1].forEach(i=>{
+    const t=S.teams[i],pct=Math.max(0,Math.min(100,t.hp));
+    $("#tn"+i).textContent=t.name;$("#fn"+i).textContent=FIGHTERS.find(f=>f.id===t.f).name;
+    $("#hp"+i).textContent=t.hp;$("#fl"+i).style.width=pct+"%";$("#tr"+i).style.width=pct+"%";
+    const sd=$("#side"+i);sd.classList.toggle("active",i===a&&S.phase!=="over");sd.classList.toggle("low",t.hp>0&&t.hp<=30);sd.classList.toggle("over",t.hp>100);
+    $("#db"+i).hidden=!(S.double&&i===a&&S.phase!=="over"&&!S.cur);
+    $("#f"+i).classList.toggle("active",i===a&&S.phase!=="over");
+  });
+  const r=roundNo(),inR=S.turn%TURNS_PER_ROUND;
+  $("#rnd").textContent=S.phase==="sd"?"Sudden death":r===ROUNDS?"Final round":"Round "+r+" / "+ROUNDS;
+  $("#pips").innerHTML=Array.from({length:TURNS_PER_ROUND},(_,i)=>`<i class="${i<inR||S.phase==="over"?"done":i===inR?"now":""}"></i>`).join("");
+  if(S.phase!=="question"){$("#clockNum").textContent=S.phase==="over"?"K.O.":"VS";$("#clock").classList.remove("urgent");if(S.phase==="over"&&S.over&&S.over.how!=="K.O.")$("#clockNum").textContent="END"}
+  $("#spinBtn").disabled=S.phase!=="idle";
+  $("#undoBtn").disabled=!prevSnap||busy;
+  const t=S.teams[a],pr=$("#prompt");pr.style.setProperty("--pc",TEAMCOL[a]);
+  pr.innerHTML=S.phase==="idle"?`<b>${esc(t.name)}</b>, your turn. Press SPIN or <kbd>Space</kbd>${S.double?' · <span style="color:var(--gold)">double damage!</span>':""}`
+    :S.phase==="spinning"?`<b>${esc(t.name)}</b> is spinning…`
+    :S.phase==="over"?`Game over · <b style="color:${TEAMCOL[S.over.w]}">${esc(S.teams[S.over.w].name)}</b> wins`
+    :S.phase==="sd"?"Sudden death!":`<b>${esc(t.name)}</b>`;
+}
+function save(){if(S)lsSet({S,prevSnap})}
+function undo(){
+  if(!prevSnap||["spinning","anim","intro","ending"].includes(S.phase))return;
+  stopTimer();$("#qov").hidden=true;$("#banner").hidden=true;
+  S=clone(prevSnap);prevSnap=null;S.phase="idle";S.cur=null;
+  [0,1].forEach(i=>$("#f"+i).className="fighter p"+(i+1));
+  $("#landtag").textContent="";$("#wbox").classList.remove("landed");setAngle(S.angle);render();save();
+}
+function toSetup(){stopTimer();lsDel();S=null;prevSnap=null;$("#qov").hidden=true;$("#game").hidden=true;$("#setup").hidden=false;initSetup()}
+function armConfirm(btn,label,armedLabel,fn){let tm=null;btn.onclick=()=>{if(btn.classList.contains("armed")){clearTimeout(tm);btn.classList.remove("armed");btn.textContent=label;fn();return}
+  btn.classList.add("armed");btn.textContent=armedLabel;tm=setTimeout(()=>{btn.classList.remove("armed");btn.textContent=label},3000)}}
+function fs(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
+
+$("#startBtn").onclick=()=>{ac();newGame()};
+$("#resumeBtn").onclick=()=>{const d=lsGet();if(!d||!d.S)return;S=d.S;prevSnap=d.prevSnap;
+  if(S.phase==="over"){enterGame();showWinner();return}
+  if(S.phase!=="idle"&&S.phase!=="intro"){if(prevSnap){S=clone(prevSnap);prevSnap=null}S.cur=null}
+  S.phase="idle";enterGame()};
+$("#spinBtn").onclick=spin;
+$("#undoBtn").onclick=undo;
+$("#muteBtn").onclick=()=>{muted=!muted;$("#muteBtn").textContent="Sound: "+(muted?"off":"on")};
+$("#fsBtn").onclick=fs;
+armConfirm($("#restartBtn"),"Restart","Click again to restart",toSetup);
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"){if(e.key==="Enter")$("#startBtn").click();return}
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=e.key.toLowerCase();
+  if(k==="f"){fs();return}
+  if(k==="m"){$("#muteBtn").click();return}
+  if(!S)return;
+  if(e.key===" "){e.preventDefault();if(S.phase==="idle")spin();else if(S.phase==="result")cont();return}
+  if(S.phase==="question"){
+    if(S.cur.kind==="q"&&"abcd".includes(k)&&k.length===1)answer("abcd".indexOf(k));
+    else if(S.cur.kind==="trap"&&(k==="a"||k==="b"))choose(k==="a");
+    else if(k==="n")timeout();
+  }
+});
+window.claude?.hot?.snapshot?.(()=>({S,prevSnap,picks}));
+function boot(d){
+  if(d&&d.picks)picks=d.picks;initSetup();
+  if(d&&d.S){S=d.S;prevSnap=d.prevSnap||null;if(!["idle","over"].includes(S.phase)){if(prevSnap){S=clone(prevSnap);prevSnap=null}S.cur=null;S.phase="idle"}enterGame();if(S.phase==="over")showWinner()}
+}
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??null);
+</script>
